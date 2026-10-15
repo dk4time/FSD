@@ -1,0 +1,13 @@
+{
+  "name": "p1-products",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Product Catalog API (P1) - Express solution",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "setId": "A2",
+  "mode": "assessment",
+  "title": "Doctor Directory",
+  "resource": "doctors",
+  "text1": {
+    "name": "name",
+    "minLen": 3,
+    "maxLen": 60,
+    "searchable": true,
+    "sortable": true
+  },
+  "text2": {
+    "name": "clinic",
+    "minLen": 2,
+    "maxLen": 40,
+    "searchable": true
+  },
+  "enum": {
+    "name": "specialization",
+    "values": [
+      "Cardiology",
+      "Dermatology",
+      "Neurology",
+      "Pediatrics",
+      "Orthopedics"
+    ],
+    "filterable": true
+  },
+  "amount": {
+    "name": "consultationFee",
+    "exclusiveMin": 0,
+    "max": 50000,
+    "genMin": 1,
+    "genDecimals": 2,
+    "rangeFilter": [
+      "minConsultationFee",
+      "maxConsultationFee"
+    ],
+    "sortable": true
+  },
+  "count": {
+    "name": "experienceYears",
+    "integer": true,
+    "min": 0,
+    "max": 60,
+    "sortable": true
+  },
+  "flag": {
+    "name": "acceptingPatients",
+    "filterable": true
+  },
+  "uniqueCode": {
+    "name": "licenseNumber",
+    "minLen": 4,
+    "maxLen": 20,
+    "caseInsensitiveUnique": true
+  },
+  "sample": {
+    "name": "Dr. Arjun Mehta",
+    "clinic": "City Care Clinic",
+    "specialization": "Cardiology",
+    "consultationFee": 800,
+    "experienceYears": 12,
+    "acceptingPatients": true,
+    "licenseNumber": "TN-45821"
+  },
+  "sortFields": [
+    "name",
+    "consultationFee",
+    "experienceYears"
+  ]
+}

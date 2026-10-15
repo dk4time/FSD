@@ -1,0 +1,24 @@
+{
+  "name": "assessment-collector",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Receives assessment results over the LAN and stores them in MongoDB Atlas",
+  "main": "server.js",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "collector": "node server.js",
+    "check-atlas": "node check-atlas.js",
+    "test": "node --test test/*.test.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "mongodb": "^6.12.0"
+  },
+  "devDependencies": {
+    "mongodb-memory-server": "^10.1.3"
+  }
+}

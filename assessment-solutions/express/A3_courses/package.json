@@ -1,0 +1,13 @@
+{
+  "name": "a3-courses",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Online Courses API (A3) - Express solution",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}

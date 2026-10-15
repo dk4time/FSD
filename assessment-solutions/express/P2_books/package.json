@@ -1,0 +1,13 @@
+{
+  "name": "p2-books",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Library Books API (P2) - Express solution",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}

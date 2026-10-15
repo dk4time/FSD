@@ -1,0 +1,722 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Video 1 · Express Script</title>
+<style>
+:root{--bg:#fbfaf7;--card:#fff;--ink:#1f2328;--muted:#6a717b;--line:#e3e1db;--open:#1d5fbf;--openbg:#e9f1fc;--show:#7a3db8;--showbg:#f3ecfb;--say:#1f7a4d;--codebg:#f5f4f0;--hl:#fff6d6;--accent:#b45309}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15171a;--card:#1d2024;--ink:#e6e6e3;--muted:#9aa1aa;--line:#30343a;--open:#7fb0ff;--openbg:#1b2a40;--show:#c79bff;--showbg:#2a2140;--say:#6fd3a0;--codebg:#121417;--hl:#3a3216;--accent:#f0a24b}}
+:root[data-theme="dark"]{--bg:#15171a;--card:#1d2024;--ink:#e6e6e3;--muted:#9aa1aa;--line:#30343a;--open:#7fb0ff;--openbg:#1b2a40;--show:#c79bff;--showbg:#2a2140;--say:#6fd3a0;--codebg:#121417;--hl:#3a3216;--accent:#f0a24b}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:980px;margin:0 auto;padding:24px 16px 80px}
+h1{font-size:28px;margin:0 0 4px} .sub{color:var(--muted);margin:0 0 20px}
+.muted{color:var(--muted);font-size:13px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 20px;margin:16px 0}
+.legend span{display:inline-block;margin-right:14px}
+.toc ol{list-style:none;padding:0;margin:0;columns:2;column-gap:28px}
+.toc li{break-inside:avoid;padding:2px 0;font-size:14px}
+.toc .tocpart{font-weight:700;margin-top:8px;color:var(--accent)}
+.toc a{color:var(--ink);text-decoration:none} .toc a:hover{text-decoration:underline}
+h2.part{margin:40px 0 8px;font-size:15px;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+.seg{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 20px;margin:14px 0;page-break-inside:avoid}
+.seg.optional{border-style:dashed}
+.seg header{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.seg h3{margin:0;font-size:19px;flex:1;min-width:200px}
+.num{background:var(--ink);color:var(--card);border-radius:50%;width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex:none}
+.time{color:var(--muted);font-size:13px;white-space:nowrap}
+.cue{display:flex;gap:10px;align-items:flex-start;border-radius:6px;padding:8px 10px;margin:6px 0;font-size:15px}
+.cue.open{background:var(--openbg)} .cue.show{background:var(--showbg)}
+.label{font-size:11px;font-weight:800;letter-spacing:.08em;padding:2px 6px;border-radius:4px;flex:none;margin-top:3px;color:#fff}
+.open .label{background:var(--open)} .show .label{background:var(--show)}
+.say{margin-top:12px;border-left:4px solid var(--say);padding:2px 0 2px 14px}
+.say .label{background:var(--say);display:inline-block;margin-bottom:4px}
+.say p{margin:8px 0;font-size:17.5px;line-height:1.65}
+.say p.action{font-size:14px;color:var(--muted);font-style:italic}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.88em;background:var(--codebg);padding:1px 4px;border-radius:4px;overflow-wrap:anywhere}
+pre{background:var(--codebg);border:1px solid var(--line);border-radius:6px;padding:10px 12px;overflow-x:auto;font:13px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;margin:6px 0}
+details.code{margin:6px 0} details.code summary{cursor:pointer;font-size:13px;color:var(--muted)}
+details.code .file{font-family:ui-monospace,Menlo,monospace;color:var(--ink)}
+.snippet{border:1px dashed var(--accent);border-radius:8px;padding:8px 10px;margin:8px 0}
+.sniptitle{font-size:13px;font-weight:700;color:var(--accent)}
+.tablewrap{overflow-x:auto;margin:8px 0}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{border:1px solid var(--line);padding:5px 7px;text-align:left;vertical-align:top}
+thead th{background:var(--codebg)} tr.hl td,tr.hl th{background:var(--hl)}
+.tag{background:var(--accent);color:#fff;border-radius:4px;padding:0 4px;font-size:11px;font-weight:700}
+.steps{padding-left:22px} .steps li{margin:4px 0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px} .grid2 h4{margin:4px 0}
+.toolbar{position:sticky;top:0;z-index:5;background:var(--bg);padding:8px 0;display:flex;gap:8px;flex-wrap:wrap;border-bottom:1px solid var(--line)}
+button{font:inherit;font-size:13px;padding:5px 10px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:6px;cursor:pointer}
+body.big .say p{font-size:22px}
+body.sayonly .cue,body.sayonly details,body.sayonly .snippet,body.sayonly .tablewrap,body.sayonly .steps,body.sayonly .grid2{display:none}
+@media (max-width:700px){.toc ol{columns:1}.grid2{grid-template-columns:1fr}.say p{font-size:16.5px}}
+@media print{.toolbar{display:none}details.code[open] summary~*{display:block}body{background:#fff}.seg{border-color:#ccc}}
+</style></head>
+<body><div class="wrap">
+<div class="toolbar"><button onclick="document.body.classList.toggle('big')">Larger text</button><button onclick="document.body.classList.toggle('sayonly')">Spoken text only</button><button onclick="document.querySelectorAll('details').forEach(d=>d.open=true)">Expand all code</button><button onclick="document.querySelectorAll('details').forEach(d=>d.open=false)">Collapse code</button><button onclick="window.print()">Print</button></div>
+<h1>Video 1 — MERN track (Node.js + Express)</h1>
+<p class="sub">Practice Set P1 · Product Catalog · Trainer script, explained walk-through (no live coding) · About 68 minutes (+2 min optional)</p>
+
+<div class="card legend"><b>How to read each block:</b><br>
+<span><span class="label" style="background:var(--open)">OPEN</span> the file or window to bring on screen</span>
+<span><span class="label" style="background:var(--show)">SHOW</span> the lines / part to highlight</span>
+<span><span class="label" style="background:var(--say)">SAY</span> what you speak</span><br>
+<span class="muted">Grey italic lines in SAY are actions, not spoken. Each code panel (click to open) shows exactly the lines from the solution file, with their line numbers.</span></div>
+
+<div class="card"><b>Before you record</b><ol class="steps">
+<li>Node.js 18+ installed. Open <code>assessment-solutions/express/P1_products</code> in VS Code; run <code>npm install</code> once before recording.</li>
+<li>Open <code>FSD-Assessment-v2/Assessment_Question_Papers_PDF/P1_Product_Catalog.pdf</code> in a viewer at 125–150% zoom.</li>
+<li>Editor: font size 18+, line numbers on, word wrap off, theme with good contrast.</li>
+<li>Postman (or Thunder Client): a collection with the 22 requests from section 9, body type <i>raw → JSON</i>.</li>
+<li>A second terminal at <code>assessment-platform</code> for the evaluator demo (segment “Watch the evaluator…”).</li>
+<li>Nothing running on port 8080. Notifications off.</li>
+<li>Keep this page open on a second screen. Use “Spoken text only” or “Larger text” as a teleprompter.</li>
+</ol></div>
+
+<nav class="card toc"><b>Segments</b><ol><li class="tocpart">Part A · Why this video</li><li><a href="#s1">1. Welcome and plan</a> <span class="muted">0:00</span></li><li class="tocpart">Part B · Reading the question paper</li><li><a href="#s2">2. The map of the paper</a> <span class="muted">1:30</span></li><li><a href="#s3">3. Sections 1 and 2: the problem and the ground rules</a> <span class="muted">3:30</span></li><li><a href="#s4">4. Section 3: the resource table, row by row</a> <span class="muted">6:00</span></li><li><a href="#s5">5. The mirror: how your assessment paper maps to P1</a> <span class="muted">10:00</span></li><li><a href="#s6">6. Section 4: the six endpoints</a> <span class="muted">12:30</span></li><li><a href="#s7">7. Section 5: the list, pagination, filters, search and sort</a> <span class="muted">14:30</span></li><li><a href="#s8">8. Section 6: errors, and the rules that are easy to miss</a> <span class="muted">18:30</span></li><li><a href="#s9">9. Sections 8 and 10: how you are marked</a> <span class="muted">21:30</span></li><li class="tocpart">Part C · The code, mapped to the paper</li><li><a href="#s10">10. Project setup</a> <span class="muted">24:00</span></li><li><a href="#s11">11. App setup and the in-memory data</a> <span class="muted">26:00</span></li><li><a href="#s12">12. Validation: one checker per row of section 3</a> <span class="muted">28:00</span></li><li><a href="#s13">13. validateBody, findIndex and toRecord</a> <span class="muted">31:30</span></li><li><a href="#s14">14. Query helpers and POST</a> <span class="muted">34:30</span></li><li><a href="#s15">15. GET list, part 1: validate every query parameter</a> <span class="muted">36:30</span></li><li><a href="#s16">16. GET list, part 2: filters, search, sort, pagination</a> <span class="muted">39:00</span></li><li><a href="#s17">17. GET one, PUT, PATCH, DELETE</a> <span class="muted">42:30</span></li><li><a href="#s18">18. Unknown routes, broken JSON and the port</a> <span class="muted">45:30</span></li><li><a href="#s19">19. The unique field and 409 (not in P1, but in P2 and some assessment sets)</a> <span class="muted">47:30</span></li><li class="tocpart">Part D · Run it and test it</li><li><a href="#s20">20. Start the server</a> <span class="muted">50:00</span></li><li><a href="#s21">21. Test in Postman with the section 9 checklist</a> <span class="muted">51:30</span></li><li class="tocpart">Part E · How it is marked, and assessment day</li><li><a href="#s22">22. Watch the evaluator mark this solution (trainer screen)</a> <span class="muted">57:30</span></li><li><a href="#s23">23. Optional: one small bug, and what it costs</a> <span class="muted">optional</span></li><li><a href="#s24">24. Assessment day: the kit, step by step</a> <span class="muted">60:30</span></li><li class="tocpart">Part F · Strategy</li><li><a href="#s25">25. Strategy: how to get the most marks</a> <span class="muted">63:30</span></li><li><a href="#s26">26. Wrap-up and homework</a> <span class="muted">66:30</span></li></ol></nav>
+
+<h2 class="part">Part A · Why this video</h2>
+<section class="seg" id="s1">
+  <header><span class="num">1</span><h3>Welcome and plan</h3><span class="time">@ 0:00 · ~1.5 min</span></header>
+  <div class="cue open"><span class="label">OPEN</span><span>P1_Product_Catalog.pdf</span></div>
+  <div class="cue show"><span class="label">SHOW</span><span>Page 1, top of the page: the title and the P1 box in the top-right corner.</span></div>
+  
+  
+  
+  
+  
+  
+  <div class="say"><span class="label">SAY</span><p>Hello everyone. Many of you told us the practice paper was hard to understand, and that you were not sure how to prepare. So in this video I will take Practice Set P1, the Product Catalog, and explain it from the first line to the last.</p><p>I will not type code live. I will show you a finished solution, and for every part of the question I will show you the exact lines of code that answer it. Your job is to understand the idea, then build it yourself.</p><p>Why does P1 matter so much? Because your assessment paper is a mirror of this paper. Same sections. Same rules. Same 100 checks. Same marking. Only the topic and the field names change. If you understand P1 fully, you already understand your assessment.</p><p>This video is for the MERN track, and we use Node.js with Express. Please note: the assessment tests only your back-end API. There is no MongoDB and no React in this assessment. Only Express, and data kept in memory.</p><p>Here is the plan. First, we read the question paper section by section. Second, we walk through the code. Third, we run the server and test it in Postman. Fourth, I show you how your work is marked and what happens on assessment day. Last, I give you a strategy to get the most marks in the time you have.</p></div>
+</section>
+<h2 class="part">Part B · Reading the question paper</h2>
+<section class="seg" id="s2">
+  <header><span class="num">2</span><h3>The map of the paper</h3><span class="time">@ 1:30 · ~2 min</span></header>
+  <div class="cue open"><span class="label">OPEN</span><span>P1_Product_Catalog.pdf</span></div>
+  <div class="cue show"><span class="label">SHOW</span><span>Scroll slowly through pages 1 to 3. Pause on each blue section heading.</span></div>
+  
+  
+  
+  
+  
+  
+  <div class="say"><span class="label">SAY</span><p>Before we go into details, let us see the shape of the paper. There are ten sections.</p><p>Section 1 tells you what to build. Section 2 gives the ground rules. Sections 3, 4, 5 and 6 are the contract: the fields, the endpoints, the list options and the errors. This is the most important part. Section 7 has examples. Section 8 tells you how you are marked. Section 9 is a checklist to test your own API. Section 10 is the marking scheme.</p><p>One tip: read the whole paper once before you write any code. Students lose marks not because the code is hard, but because they missed one line in the paper.</p><p>Look at the box in the top-right corner. Here it says P1. On assessment day your paper will say A1, A2, up to A8. That is your set. You will type it when you log in to the assessment kit, so check it carefully.</p></div>
+</section>
+
+<section class="seg" id="s3">
+  <header><span class="num">3</span><h3>Sections 1 and 2: the problem and the ground rules</h3><span class="time">@ 3:30 · ~2.5 min</span></header>
+  <div class="cue open"><span class="label">OPEN</span><span>P1_Product_Catalog.pdf</span></div>
+  <div class="cue show"><span class="label">SHOW</span><span>Page 1, sections 1 and 2. Highlight “in memory only”, “empty”, “PORT” and “Restart your server”.</span></div>
+  
+  
+  
+  
+  
+  
+  <div class="say"><span class="label">SAY</span><p>Section 1 says: build a REST API for products. You may use Express or Spring Boot. There is no starter code.</p><p>Now read this line slowly: data is kept in memory only. That means an array in Express, or a List in Java. No database, no JSON file and no sample data. When your server starts, the list must be empty.</p><p>Why empty? Because the evaluator creates its own records. It calls your POST endpoint about 45 times with random values. If your server already has data, the counts will be wrong and you lose marks.</p><p>Section 2 has five rules. Rule 2: read the port from the PORT environment variable, and use 8080 if it is not set. Rule 3: every request and response is JSON. Rule 4: restart your server before every evaluation, so it starts empty again. Rule 5: do not change any field name, path or status code. The evaluator checks them letter by letter. “Products” with a capital P is wrong. “product” without the s is wrong.</p></div>
+</section>
+
+<section class="seg" id="s4">
+  <header><span class="num">4</span><h3>Section 3: the resource table, row by row</h3><span class="time">@ 6:00 · ~4 min</span></header>
+  <div class="cue open"><span class="label">OPEN</span><span>P1_Product_Catalog.pdf</span></div>
+  <div class="cue show"><span class="label">SHOW</span><span>Page 1, section 3 table. Point to each row while you speak. Then the two sample JSON blocks below the table.</span></div>
+  
+  
+  
+  
+  
+  
+  <div class="say"><span class="label">SAY</span><p>This table is the heart of the paper. Each row is one field. The columns tell you the name, the type, the rules and whether it is required. Every rule you see here becomes one check in your code.</p><p>First row: id. Your server creates it. Never take id from the request body. A simple counter, 1, 2, 3, is enough.</p><p>name: a string. Trim it first, which means remove the spaces at the start and end. After trimming it must be 3 to 60 characters. It is searchable and sortable; remember these two words, we use them in section 5.</p><p>brand: a string, trimmed, 2 to 40 characters, searchable.</p><p>category: an enum. That means only these five values are allowed: Electronics, Books, Clothing, Home, Sports. It is case-sensitive, so “electronics” with a small e is invalid.</p><p>price: a number, greater than 0, at most 100000, decimals allowed. Important: it must be a JSON number. If someone sends price as text, in quotes, it is invalid.</p><p>stock: an integer, a whole number from 0 to 10000. So 1.5 is invalid.</p><p>inStock: a boolean, true or false. Again, a real JSON boolean. The text “true” in quotes is invalid.</p><p>Below the table: unknown fields are ignored. If someone sends a colour field, you do not store it and you do not return it.</p><p>And here are two samples. The first is what the client sends with POST. The second is what your server returns: the same fields, plus the id your server created.</p></div>
+</section>
+
+<section class="seg" id="s5">
+  <header><span class="num">5</span><h3>The mirror: how your assessment paper maps to P1</h3><span class="time">@ 10:00 · ~2.5 min</span></header>
+  <div class="cue open"><span class="label">OPEN</span><span>This script page, “Mirror table” (scroll to it), or show it as a slide.</span></div>
+  <div class="cue show"><span class="label">SHOW</span><span>The mirror table. Point to the P1 row first, then move down the same column for A1 to A8.</span></div>
+  
+  <div id="mirror"><div class="tablewrap"><table class="mirror">
+<thead><tr><th>Set</th><th>Path</th><th>Text 1<br><small>search + sort</small></th><th>Text 2<br><small>search</small></th>
+<th>Enum<br><small>filter</small></th><th>Decimal<br><small>range + sort</small></th><th>Range params</th>
+<th>Whole number<br><small>sort</small></th><th>Boolean<br><small>filter</small></th><th>Unique field</th></tr></thead>
+<tbody><tr class="hl"><th>P1</th><td><code>/api/products</code></td><td><code>name</code></td><td><code>brand</code></td><td><code>category</code></td><td><code>price</code></td><td><code>minPrice, maxPrice</code></td><td><code>stock</code></td><td><code>inStock</code></td><td>—</td></tr>
+<tr class=""><th>P2</th><td><code>/api/books</code></td><td><code>title</code></td><td><code>author</code></td><td><code>genre</code></td><td><code>price</code></td><td><code>minPrice, maxPrice</code></td><td><code>copies</code></td><td><code>available</code></td><td><code>isbn</code> <span class="tag">409</span></td></tr>
+<tr class=""><th>A1</th><td><code>/api/employees</code></td><td><code>name</code></td><td><code>designation</code></td><td><code>department</code></td><td><code>salary</code></td><td><code>minSalary, maxSalary</code></td><td><code>experienceYears</code></td><td><code>isActive</code></td><td><code>employeeCode</code> <span class="tag">409</span></td></tr>
+<tr class=""><th>A2</th><td><code>/api/doctors</code></td><td><code>name</code></td><td><code>clinic</code></td><td><code>specialization</code></td><td><code>consultationFee</code></td><td><code>minConsultationFee, maxConsultationFee</code></td><td><code>experienceYears</code></td><td><code>acceptingPatients</code></td><td><code>licenseNumber</code> <span class="tag">409</span></td></tr>
+<tr class=""><th>A3</th><td><code>/api/courses</code></td><td><code>title</code></td><td><code>instructor</code></td><td><code>category</code></td><td><code>fee</code></td><td><code>minFee, maxFee</code></td><td><code>durationHours</code></td><td><code>published</code></td><td>—</td></tr>
+<tr class=""><th>A4</th><td><code>/api/movies</code></td><td><code>title</code></td><td><code>director</code></td><td><code>genre</code></td><td><code>rating</code></td><td><code>minRating, maxRating</code></td><td><code>durationMinutes</code></td><td><code>nowShowing</code></td><td>—</td></tr>
+<tr class=""><th>A5</th><td><code>/api/rooms</code></td><td><code>name</code></td><td><code>location</code></td><td><code>type</code></td><td><code>pricePerNight</code></td><td><code>minPricePerNight, maxPricePerNight</code></td><td><code>capacity</code></td><td><code>available</code></td><td><code>roomNumber</code> <span class="tag">409</span></td></tr>
+<tr class=""><th>A6</th><td><code>/api/dishes</code></td><td><code>dishName</code></td><td><code>restaurant</code></td><td><code>category</code></td><td><code>price</code></td><td><code>minPrice, maxPrice</code></td><td><code>calories</code></td><td><code>isVegetarian</code></td><td>—</td></tr>
+<tr class=""><th>A7</th><td><code>/api/vehicles</code></td><td><code>model</code></td><td><code>brand</code></td><td><code>type</code></td><td><code>rentPerDay</code></td><td><code>minRentPerDay, maxRentPerDay</code></td><td><code>seats</code></td><td><code>available</code></td><td><code>registrationNumber</code> <span class="tag">409</span></td></tr>
+<tr class=""><th>A8</th><td><code>/api/events</code></td><td><code>title</code></td><td><code>venue</code></td><td><code>category</code></td><td><code>ticketPrice</code></td><td><code>minTicketPrice, maxTicketPrice</code></td><td><code>seatsAvailable</code></td><td><code>isOnline</code></td><td>—</td></tr></tbody></table></div></div>
+  
+  
+  
+  
+  <div class="say"><span class="label">SAY</span><p>Now the most useful idea in this video. Every paper, P1, P2 and A1 to A8, has exactly the same kinds of fields. Two text fields: the first is searched and sorted, the second is only searched. One enum that you filter by. One decimal number that you filter by range and sort. One whole number that you sort. One boolean that you filter by.</p><p>Look at this table. In P1, the decimal field is price, and its range filters are minPrice and maxPrice. In A5 Hotel Rooms, the decimal field is pricePerNight, and the range filters are minPricePerNight and maxPricePerNight. Same rule, different name.</p><p>Some sets have one extra field: a unique code, like isbn in P2, or employeeCode in A1. If someone creates a second record with the same code, you return 409. P1 has no unique field, so I will show you how to handle it later from P2.</p><p>So on assessment day, do this first: take your paper, and write down which field is text 1, text 2, enum, decimal, whole number, boolean and unique code. After that, it is the same project you practised.</p></div>
+</section>
+
+<section class="seg" id="s6">
+  <header><span class="num">6</span><h3>Section 4: the six endpoints</h3><span class="time">@ 12:30 · ~2 min</span></header>
+  <div class="cue open"><span class="label">OPEN</span><span>P1_Product_Catalog.pdf</span></div>
+  <div class="cue show"><span class="label">SHOW</span><span>Page 1, section 4 table, then the three bullet points under it.</span></div>
+  
+  
+  
+  
+  
+  
+  <div class="say"><span class="label">SAY</span><p>Section 4 lists six endpoints, all under /api/products.</p><p>POST /api/products creates a record and returns 201 with the created record. GET /api/products returns the list. GET /api/products/ with an id returns one record. PUT replaces a record. PATCH updates some fields. DELETE removes a record and returns 204 with an empty body.</p><p>Now the three bullet points. PUT replaces the whole record, so every required field must be sent. And PUT never creates a record: if the id does not exist, return 404.</p><p>PATCH changes only the fields you send, but at least one field must be sent. An empty object is 400. Every field you send is checked with the same rules as POST.</p><p>And the id can never change. Even if the body contains an id, you ignore it.</p></div>
+</section>
+
+<section class="seg" id="s7">
+  <header><span class="num">7</span><h3>Section 5: the list, pagination, filters, search and sort</h3><span class="time">@ 14:30 · ~4 min</span></header>
+  <div class="cue open"><span class="label">OPEN</span><span>P1_Product_Catalog.pdf</span></div>
+  <div class="cue show"><span class="label">SHOW</span><span>Page 1, section 5 table, then “How a list request is processed”, then the list response JSON. Then page 2, the yellow “Short on time? Minimum list.” box.</span></div>
+  
+  
+  
+  
+  
+  
+  <div class="say"><span class="label">SAY</span><p>Section 5 explains GET /api/products. The list response is not a plain array. It is an object with five keys: data, page, limit, total and totalPages. data holds the records for this page.</p><p>page and limit are the pagination. Default page is 1, default limit is 10, and limit can be at most 50. Anything that is not a positive whole number is 400. But a page after the last page is not an error. It returns 200 with an empty data array.</p><p>search looks inside name or brand, ignoring capital and small letters. category and inStock are exact filters. minPrice and maxPrice are a range, and both ends are included. sort can be name, price or stock, and order can be asc or desc. Any value you do not support, like sort equals banana, is 400.</p><p>Now this line is very important: filters, then search, then sort, then pagination. Let me give an example. Say there are 45 products. You ask for category Electronics, and 9 of them match. You ask for limit 5, page 2. So page 2 shows records 6 to 9, that is 4 records. total is 9, not 45 and not 4. totalPages is 9 divided by 5, rounded up, which is 2.</p><p>And if you do not sort, return the records in the order they were created, oldest first.</p><p>Now look at this yellow box on page 2. It says: short on time? Even if you cannot finish pagination, filters, search and sort, still return this shape: the first 10 records, page 1, limit 10, the total and totalPages. This alone gives you the List basics marks. The other 60 marks do not depend on these four features. Never return a bare array.</p></div>
+</section>
+
+<section class="seg" id="s8">
+  <header><span class="num">8</span><h3>Section 6: errors, and the rules that are easy to miss</h3><span class="time">@ 18:30 · ~3 min</span></header>
+  <div class="cue open"><span class="label">OPEN</span><span>P1_Product_Catalog.pdf</span></div>
+  <div class="cue show"><span class="label">SHOW</span><span>Page 2, section 6 table, the “Validation” paragraph, then the 12 “Rules that are easy to miss”.</span></div>
+  
+  
+  
+  
+  
+  
+  <div class="say"><span class="label">SAY</span><p>Every error must be JSON, with a short message under the key error or message. The wording is free. Nobody checks your sentence. But the status code is checked exactly.</p><p>Remember the five codes: 201 created. 200 read, list or update. 204 deleted. 400 for anything invalid: a bad body, a bad field, broken JSON or a bad query parameter. 404 for an unknown id or an unknown route. And 409 for a duplicate unique value, which P1 does not have.</p><p>Now the twelve rules that are easy to miss. I group them into four ideas.</p><p>Idea one: unknown things are 404. An id that does not exist is 404, even if it looks strange, like abc. Never 400 and never 500. PUT on an unknown id is 404. Delete twice, and the second time is 404. An unknown route is a JSON 404.</p><p>Idea two: types are strict. A number sent as text is invalid. true sent as text is invalid. 1.5 for stock is invalid. Price 0 or negative is invalid. Text is trimmed before checking and before saving.</p><p>Idea three: the server owns the id. POST ignores the id you send. PUT and PATCH never change it.</p><p>Idea four: some things look like errors but are not. A page after the last page is 200 with empty data. minPrice greater than maxPrice is 200 with empty data and total 0.</p><p>Finally: your server must never crash and never return an HTML error page, even for broken JSON.</p></div>
+</section>
+
+<section class="seg" id="s9">
+  <header><span class="num">9</span><h3>Sections 8 and 10: how you are marked</h3><span class="time">@ 21:30 · ~2.5 min</span></header>
+  <div class="cue open"><span class="label">OPEN</span><span>P1_Product_Catalog.pdf</span></div>
+  <div class="cue show"><span class="label">SHOW</span><span>Page 2, section 8 bullets and the “Suggested build order” line. Then page 3, the section 10 marking scheme table.</span></div>
+  
+  
+  
+  
+  
+  
+  <div class="say"><span class="label">SAY</span><p>The evaluator starts with your empty server. It creates its own random records with POST. Then it runs 100 checks, in a fixed order, 1 mark each. There are no part marks inside a check.</p><p>It looks only at HTTP: the status code, the JSON shape and the values. It does not look at your code, your folders or your framework. Express and Spring Boot are marked exactly the same.</p><p>Two warnings. If POST does not work, most other checks cannot even run, because they need records. So build and test POST first. And if your server crashes in the middle, every check after the crash fails.</p><p>Now the marking scheme on page 3. Create 14, Read one 8, List basics 8, PUT 10, PATCH 10, DELETE 8, HTTP basics 2. That is 60 marks for the basic CRUD work. Pagination 12, Filter 10, Search 8, Sort 6 and Combined 4 give the other 40.</p><p>So the build order in the paper makes sense: POST and GET by id, then the list, PUT, PATCH and DELETE. Then pagination, filters, search and sort. Then go through the easy-to-miss rules.</p></div>
+</section>
+<h2 class="part">Part C · The code, mapped to the paper</h2>
+<section class="seg" id="s10">
+  <header><span class="num">10</span><h3>Project setup</h3><span class="time">@ 24:00 · ~2 min</span></header>
+  <div class="cue open"><span class="label">OPEN</span><span>Terminal, then express/P1_products/package.json</span></div>
+  <div class="cue show"><span class="label">SHOW</span><span>package.json, lines 1 to 12. Before that, show the three commands below in the terminal (already run, do not run again).</span></div>
+  <details class="code"><summary><span class="file">express/P1_products/package.json</span> · lines 1–12</summary><pre> 1  {
+ 2    "name": "p1-products",
+ 3    "version": "1.0.0",
+ 4    "private": true,
+ 5    "description": "Product Catalog API (P1) - Express solution",
+ 6    "main": "server.js",
+ 7    "scripts": {
+ 8      "start": "node server.js"
+ 9    },
+10    "dependencies": {
+11      "express": "^4.21.2"
+12    }</pre></details>
+  
+  <div class="snippet"><div class="sniptitle">Commands to show (already run before recording)</div><pre>mkdir P1_products &amp;&amp; cd P1_products
+npm init -y
+npm install express</pre></div>
+  
+  
+  
+  <div class="say"><span class="label">SAY</span><p>Now let us see the code. Starting a project takes three commands: make a folder, npm init -y, and npm install express. That is all. Express is the only package we need.</p><p>In package.json you can see express in dependencies, and a start script that runs node server.js. The whole solution is one file: server.js, about 250 lines. You do not need folders, models or controllers for this assessment. One file is perfectly fine.</p></div>
+</section>
+
+<section class="seg" id="s11">
+  <header><span class="num">11</span><h3>App setup and the in-memory data</h3><span class="time">@ 26:00 · ~2 min</span></header>
+  <div class="cue open"><span class="label">OPEN</span><span>express/P1_products/server.js</span></div>
+  <div class="cue show"><span class="label">SHOW</span><span>Lines 1 to 12.</span></div>
+  <details class="code"><summary><span class="file">express/P1_products/server.js</span> · lines 1–12</summary><pre> 1  // Product Catalog API (Practice Set P1) - Express, in-memory, no database.
+ 2  const express = require('express');
+ 3  
+ 4  const app = express();
+ 5  app.use(express.json());
+ 6  
+ 7  // ---------- data ----------
+ 8  const products = []; // records in creation order
+ 9  let nextId = 1;
+10  
+11  const CATEGORIES = ['Electronics', 'Books', 'Clothing', 'Home', 'Sports'];
+12  const SORT_FIELDS = ['name', 'price', 'stock'];</pre></details>
+  
+  
+  
+  
+  
+  <div class="say"><span class="label">SAY</span><p>Line 4 creates the app. Line 5, express.json, is very important. It reads the JSON body of each request into req.body. Without this line, req.body is undefined and every POST fails.</p><p>Line 8 is our database: a plain array called products. It starts empty, as the paper asks. Line 9 is a counter for the next id.</p><p>Line 11 is the list of categories, copied exactly from section 3. Line 12 is the list of fields you can sort by, from section 5. On assessment day, these two lines change to your enum values and your sort fields.</p></div>
+</section>
+
+<section class="seg" id="s12">
+  <header><span class="num">12</span><h3>Validation: one checker per row of section 3</h3><span class="time">@ 28:00 · ~3.5 min</span></header>
+  <div class="cue open"><span class="label">OPEN</span><span>express/P1_products/server.js, with P1_Product_Catalog.pdf section 3 side by side</span></div>
+  <div class="cue show"><span class="label">SHOW</span><span>Lines 14 to 56. Put the section 3 table next to the code if you can.</span></div>
+  <details class="code"><summary><span class="file">express/P1_products/server.js</span> · lines 14–56</summary><pre>14  // ---------- validation helpers ----------
+15  function isPlainObject(v) {
+16    return v !== null &amp;&amp; typeof v === 'object' &amp;&amp; !Array.isArray(v);
+17  }
+18  
+19  // Each checker returns { value } when valid or { error } when not.
+20  function checkText(body, field, min, max) {
+21    const v = body[field];
+22    if (typeof v !== 'string') return { error: `${field} must be a string` };
+23    const t = v.trim();
+24    if (t.length === 0) return { error: `${field} must not be blank` };
+25    if (t.length &lt; min || t.length &gt; max) return { error: `${field} must be ${min} to ${max} characters` };
+26    return { value: t };
+27  }
+28  
+29  const validators = {
+30    name: (b) =&gt; checkText(b, 'name', 3, 60),
+31    brand: (b) =&gt; checkText(b, 'brand', 2, 40),
+32    category: (b) =&gt; {
+33      if (typeof b.category !== 'string' || !CATEGORIES.includes(b.category)) {
+34        return { error: `category must be one of ${CATEGORIES.join(', ')}` };
+35      }
+36      return { value: b.category };
+37    },
+38    price: (b) =&gt; {
+39      const v = b.price;
+40      if (typeof v !== 'number' || !Number.isFinite(v)) return { error: 'price must be a number' };
+41      if (v &lt;= 0) return { error: 'price must be greater than 0' };
+42      if (v &gt; 100000) return { error: 'price must be at most 100000' };
+43      return { value: v };
+44    },
+45    stock: (b) =&gt; {
+46      const v = b.stock;
+47      if (typeof v !== 'number' || !Number.isInteger(v)) return { error: 'stock must be a whole number' };
+48      if (v &lt; 0 || v &gt; 10000) return { error: 'stock must be from 0 to 10000' };
+49      return { value: v };
+50    },
+51    inStock: (b) =&gt; {
+52      if (typeof b.inStock !== 'boolean') return { error: 'inStock must be true or false' };
+53      return { value: b.inStock };
+54    },
+55  };
+56  const FIELDS = Object.keys(validators);</pre></details>
+  
+  
+  
+  
+  
+  <div class="say"><span class="label">SAY</span><p>Here is the validation. Put the section 3 table next to it and you will see they match row by row.</p><p>checkText, lines 20 to 27, is used for both text fields. It checks that the value is a string, trims it, rejects a blank value, and checks the length. It returns the trimmed value, so we store the trimmed text, as rule 2 asks.</p><p>Then the validators object. name is checkText with 3 and 60. brand is checkText with 2 and 40. category must be one of the list, and includes is case-sensitive, so “electronics” fails.</p><p>price, lines 38 to 44: typeof must be number. So the text “799.5” fails here. Then it must be greater than 0 and at most 100000.</p><p>stock uses Number.isInteger, so 1.5 fails. Then 0 to 10000. And inStock must be typeof boolean, so the text “true” fails.</p><p>Each checker returns either a value or an error. That keeps the next part simple.</p></div>
+</section>
+
+<section class="seg" id="s13">
+  <header><span class="num">13</span><h3>validateBody, findIndex and toRecord</h3><span class="time">@ 31:30 · ~3 min</span></header>
+  <div class="cue open"><span class="label">OPEN</span><span>express/P1_products/server.js</span></div>
+  <div class="cue show"><span class="label">SHOW</span><span>Lines 58 to 91.</span></div>
+  <details class="code"><summary><span class="file">express/P1_products/server.js</span> · lines 58–91</summary><pre>58  // partial = true for PATCH: only validate the fields that were sent.
+59  function validateBody(body, partial) {
+60    if (!isPlainObject(body)) return { error: 'Request body must be a JSON object' };
+61    const clean = {};
+62    let sent = 0;
+63    for (const field of FIELDS) {
+64      if (!(field in body)) {
+65        if (partial) continue;
+66        return { error: `${field} is required` };
+67      }
+68      sent++;
+69      const r = validators[field](body);
+70      if (r.error) return { error: r.error };
+71      clean[field] = r.value;
+72    }
+73    if (partial &amp;&amp; sent === 0) return { error: 'Send at least one field to update' };
+74    return { value: clean };
+75  }
+76  
+77  function findIndex(id) {
+78    return products.findIndex((p) =&gt; String(p.id) === id);
+79  }
+80  
+81  function toRecord(id, data) {
+82    return {
+83      id,
+84      name: data.name,
+85      brand: data.brand,
+86      category: data.category,
+87      price: data.price,
+88      stock: data.stock,
+89      inStock: data.inStock,
+90    };
+91  }</pre></details>
+  
+  
+  
+  
+  
+  <div class="say"><span class="label">SAY</span><p>validateBody is used by POST, PUT and PATCH. The flag partial is false for POST and PUT, and true for PATCH.</p><p>First, line 60: the body must be a JSON object. Then we loop over our six known fields. If a field is missing: for POST and PUT that is an error, “name is required”. For PATCH we just skip it. Every field that is present is checked by its validator. Line 73: for PATCH, if nothing was sent, that is 400.</p><p>Notice that we only loop over known fields. So an unknown field, or an id inside the body, is simply never copied. That is how “unknown fields are ignored” and “POST ignores the id” are handled, without any extra code.</p><p>findIndex, line 77, compares the id as a string. So /api/products/abc does not crash. It just finds nothing, and we return 404.</p><p>toRecord builds the record with the id first and only the six fields. Every response uses it, so every response has the same shape.</p></div>
+</section>
+
+<section class="seg" id="s14">
+  <header><span class="num">14</span><h3>Query helpers and POST</h3><span class="time">@ 34:30 · ~2 min</span></header>
+  <div class="cue open"><span class="label">OPEN</span><span>express/P1_products/server.js</span></div>
+  <div class="cue show"><span class="label">SHOW</span><span>Lines 93 to 118.</span></div>
+  <details class="code"><summary><span class="file">express/P1_products/server.js</span> · lines 93–118</summary><pre> 93  // ---------- query helpers ----------
+ 94  // Returns a number or null when the text is not a positive whole number.
+ 95  function parsePositiveInt(text) {
+ 96    if (typeof text !== 'string' || !/^\d+$/.test(text)) return null;
+ 97    const n = Number(text);
+ 98    return n &gt;= 1 ? n : null;
+ 99  }
+100  
+101  function parseNumber(text) {
+102    if (typeof text !== 'string' || text.trim() === '') return null;
+103    const n = Number(text);
+104    return Number.isFinite(n) ? n : null;
+105  }
+106  
+107  function badRequest(res, message) {
+108    return res.status(400).json({ error: message });
+109  }
+110  
+111  // ---------- routes ----------
+112  app.post('/api/products', (req, res) =&gt; {
+113    const r = validateBody(req.body, false);
+114    if (r.error) return badRequest(res, r.error);
+115    const record = toRecord(nextId++, r.value);
+116    products.push(record);
+117    res.status(201).json(record);
+118  });</pre></details>
+  
+  
+  
+  
+  
+  <div class="say"><span class="label">SAY</span><p>parsePositiveInt accepts only digits, and the number must be at least 1. So page=0, page=-1 and page=abc all return null, and we will send 400. parseNumber is used for minPrice and maxPrice. badRequest sends 400 with a JSON error.</p><p>Now POST, lines 112 to 118. Only four steps. Validate the body; if there is an error, send 400. Build the record with the next id. Push it into the array. Send 201 with the record.</p><p>This is the first endpoint you should build on assessment day, because almost every check needs it.</p></div>
+</section>
+
+<section class="seg" id="s15">
+  <header><span class="num">15</span><h3>GET list, part 1: validate every query parameter</h3><span class="time">@ 36:30 · ~2.5 min</span></header>
+  <div class="cue open"><span class="label">OPEN</span><span>express/P1_products/server.js</span></div>
+  <div class="cue show"><span class="label">SHOW</span><span>Lines 120 to 158.</span></div>
+  <details class="code"><summary><span class="file">express/P1_products/server.js</span> · lines 120–158</summary><pre>120  app.get('/api/products', (req, res) =&gt; {
+121    const q = req.query;
+122  
+123    let page = 1;
+124    if (q.page !== undefined) {
+125      page = parsePositiveInt(q.page);
+126      if (page === null) return badRequest(res, 'page must be a positive integer');
+127    }
+128    let limit = 10;
+129    if (q.limit !== undefined) {
+130      limit = parsePositiveInt(q.limit);
+131      if (limit === null || limit &gt; 50) return badRequest(res, 'limit must be a positive integer up to 50');
+132    }
+133  
+134    if (q.category !== undefined &amp;&amp; !CATEGORIES.includes(q.category)) {
+135      return badRequest(res, 'category is not valid');
+136    }
+137    if (q.inStock !== undefined &amp;&amp; q.inStock !== 'true' &amp;&amp; q.inStock !== 'false') {
+138      return badRequest(res, 'inStock must be true or false');
+139    }
+140    let minPrice = null;
+141    if (q.minPrice !== undefined) {
+142      minPrice = parseNumber(q.minPrice);
+143      if (minPrice === null) return badRequest(res, 'minPrice must be a number');
+144    }
+145    let maxPrice = null;
+146    if (q.maxPrice !== undefined) {
+147      maxPrice = parseNumber(q.maxPrice);
+148      if (maxPrice === null) return badRequest(res, 'maxPrice must be a number');
+149    }
+150    if (q.sort !== undefined &amp;&amp; !SORT_FIELDS.includes(q.sort)) {
+151      return badRequest(res, `sort must be one of ${SORT_FIELDS.join(', ')}`);
+152    }
+153    if (q.order !== undefined &amp;&amp; q.order !== 'asc' &amp;&amp; q.order !== 'desc') {
+154      return badRequest(res, 'order must be asc or desc');
+155    }
+156    if (q.search !== undefined &amp;&amp; typeof q.search !== 'string') {
+157      return badRequest(res, 'search must be text');
+158    }</pre></details>
+  
+  
+  
+  
+  
+  <div class="say"><span class="label">SAY</span><p>The list endpoint has two halves. The first half only checks the query parameters, and returns 400 for anything wrong. Nothing is filtered yet.</p><p>page defaults to 1, limit defaults to 10, and limit above 50 is 400. category must be in the list. inStock must be exactly the text true or false. minPrice and maxPrice must be numbers. sort must be one of name, price, stock. order must be asc or desc.</p><p>Each line here matches one row of the section 5 table. On assessment day you copy the same pattern with your own parameter names.</p></div>
+</section>
+
+<section class="seg" id="s16">
+  <header><span class="num">16</span><h3>GET list, part 2: filters, search, sort, pagination</h3><span class="time">@ 39:00 · ~3.5 min</span></header>
+  <div class="cue open"><span class="label">OPEN</span><span>express/P1_products/server.js</span></div>
+  <div class="cue show"><span class="label">SHOW</span><span>Lines 160 to 202. Then show the “minimum list” code panel from this script.</span></div>
+  <details class="code"><summary><span class="file">express/P1_products/server.js</span> · lines 160–202</summary><pre>160    // 1. filters
+161    let list = products.filter((p) =&gt; {
+162      if (q.category !== undefined &amp;&amp; p.category !== q.category) return false;
+163      if (q.inStock !== undefined &amp;&amp; p.inStock !== (q.inStock === 'true')) return false;
+164      if (minPrice !== null &amp;&amp; p.price &lt; minPrice) return false;
+165      if (maxPrice !== null &amp;&amp; p.price &gt; maxPrice) return false;
+166      return true;
+167    });
+168  
+169    // 2. search (empty value = no search)
+170    if (q.search !== undefined &amp;&amp; q.search.trim() !== '') {
+171      const term = q.search.toLowerCase();
+172      list = list.filter((p) =&gt; p.name.toLowerCase().includes(term) || p.brand.toLowerCase().includes(term));
+173    }
+174  
+175    // 3. sort (Array.prototype.sort is stable, so ties keep creation order)
+176    if (q.sort !== undefined) {
+177      const field = q.sort;
+178      const dir = q.order === 'desc' ? -1 : 1;
+179      list = [...list].sort((a, b) =&gt; {
+180        let x = a[field];
+181        let y = b[field];
+182        if (typeof x === 'string') {
+183          x = x.toLowerCase();
+184          y = y.toLowerCase();
+185        }
+186        if (x &lt; y) return -1 * dir;
+187        if (x &gt; y) return 1 * dir;
+188        return 0;
+189      });
+190    }
+191  
+192    // 4. pagination
+193    const total = list.length;
+194    const start = (page - 1) * limit;
+195    res.json({
+196      data: list.slice(start, start + limit),
+197      page,
+198      limit,
+199      total,
+200      totalPages: total === 0 ? 0 : Math.ceil(total / limit),
+201    });
+202  });</pre></details>
+  
+  <div class="snippet"><div class="sniptitle">Minimum list: if you are short on time, write only this first</div><pre>app.get('/api/products', (req, res) =&gt; {
+  const total = products.length;
+  res.json({
+    data: products.slice(0, 10),
+    page: 1,
+    limit: 10,
+    total,
+    totalPages: total === 0 ? 0 : Math.ceil(total / 10),
+  });
+});</pre></div>
+  
+  
+  
+  <div class="say"><span class="label">SAY</span><p>Now the second half, in the exact order from the paper. Step 1, filters, line 161. One filter call checks category, inStock, minPrice and maxPrice together. A record must pass all of them, which is the AND the paper talks about.</p><p>Step 2, search, line 170. An empty search means no search. Otherwise we lowercase the term, and keep records where the name or the brand contains it, also lowercased. That makes it case-insensitive.</p><p>Step 3, sort, line 176. For text, we lowercase both sides first, so “apple” and “Apple” sort together. Numbers are compared as numbers, so 9 comes before 10. If order is desc, we flip the direction. JavaScript sort is stable, so equal values keep their creation order.</p><p>Step 4, pagination, line 193. total is counted here, after filters and search but before we cut the page. Then slice gives us one page. totalPages is total divided by limit, rounded up, and 0 when total is 0.</p><p>And here is the minimum list on screen. If you are running out of time, this small version earns the List basics marks, and it does not break PUT, PATCH and DELETE checks. Write this first, and replace it later with the full version.</p></div>
+</section>
+
+<section class="seg" id="s17">
+  <header><span class="num">17</span><h3>GET one, PUT, PATCH, DELETE</h3><span class="time">@ 42:30 · ~3 min</span></header>
+  <div class="cue open"><span class="label">OPEN</span><span>express/P1_products/server.js</span></div>
+  <div class="cue show"><span class="label">SHOW</span><span>Lines 204 to 233.</span></div>
+  <details class="code"><summary><span class="file">express/P1_products/server.js</span> · lines 204–233</summary><pre>204  app.get('/api/products/:id', (req, res) =&gt; {
+205    const i = findIndex(req.params.id);
+206    if (i === -1) return res.status(404).json({ error: 'Record not found' });
+207    res.json(products[i]);
+208  });
+209  
+210  app.put('/api/products/:id', (req, res) =&gt; {
+211    const i = findIndex(req.params.id);
+212    if (i === -1) return res.status(404).json({ error: 'Record not found' });
+213    const r = validateBody(req.body, false);
+214    if (r.error) return badRequest(res, r.error);
+215    products[i] = toRecord(products[i].id, r.value);
+216    res.json(products[i]);
+217  });
+218  
+219  app.patch('/api/products/:id', (req, res) =&gt; {
+220    const i = findIndex(req.params.id);
+221    if (i === -1) return res.status(404).json({ error: 'Record not found' });
+222    const r = validateBody(req.body, true);
+223    if (r.error) return badRequest(res, r.error);
+224    products[i] = toRecord(products[i].id, { ...products[i], ...r.value });
+225    res.json(products[i]);
+226  });
+227  
+228  app.delete('/api/products/:id', (req, res) =&gt; {
+229    const i = findIndex(req.params.id);
+230    if (i === -1) return res.status(404).json({ error: 'Record not found' });
+231    products.splice(i, 1);
+232    res.status(204).end();
+233  });</pre></details>
+  
+  
+  
+  
+  
+  <div class="say"><span class="label">SAY</span><p>All four start the same way: find the record, and if it is not found, return 404 with a JSON error.</p><p>GET one, line 204: return the record with 200.</p><p>PUT, line 210: find it first, then validate the full body, with partial false. Notice line 215: we keep the old id, products[i].id. So the id never changes. If the id is unknown we already returned 404, so PUT never creates anything.</p><p>PATCH, line 219: validate with partial true. Line 224 merges the old record with the new fields. Fields you did not send stay the same.</p><p>DELETE, line 228: splice removes it from the array, and we send 204 with end(), which means no body at all. Delete again, and findIndex returns -1, so the second delete is 404.</p></div>
+</section>
+
+<section class="seg" id="s18">
+  <header><span class="num">18</span><h3>Unknown routes, broken JSON and the port</h3><span class="time">@ 45:30 · ~2 min</span></header>
+  <div class="cue open"><span class="label">OPEN</span><span>express/P1_products/server.js</span></div>
+  <div class="cue show"><span class="label">SHOW</span><span>Lines 235 to 252.</span></div>
+  <details class="code"><summary><span class="file">express/P1_products/server.js</span> · lines 235–252</summary><pre>235  // Unknown route -&gt; JSON 404
+236  app.use((req, res) =&gt; {
+237    res.status(404).json({ error: 'Route not found' });
+238  });
+239  
+240  // Malformed JSON (and any other error) -&gt; JSON, never an HTML page
+241  app.use((err, req, res, next) =&gt; {
+242    if (err.type === 'entity.parse.failed') {
+243      return res.status(400).json({ error: 'Malformed JSON body' });
+244    }
+245    const status = err.status &amp;&amp; err.status &gt;= 400 &amp;&amp; err.status &lt; 500 ? err.status : 500;
+246    res.status(status).json({ error: status === 500 ? 'Internal server error' : err.message || 'Bad request' });
+247  });
+248  
+249  const PORT = process.env.PORT || 8080;
+250  app.listen(PORT, () =&gt; {
+251    console.log(`Product Catalog API listening on port ${PORT}`);
+252  });</pre></details>
+  
+  
+  
+  
+  
+  <div class="say"><span class="label">SAY</span><p>These last lines protect two marks and keep your server alive.</p><p>Line 236: any request that did not match a route above reaches this handler, and gets a JSON 404. Without it, Express sends an HTML page and you lose the HTTP basics mark.</p><p>Line 241 is the error handler. It has four parameters: err, req, res and next. That is how Express knows it is an error handler. When the body is broken JSON, express.json throws, and we send 400 with a JSON message. The server does not crash.</p><p>Line 249: the port comes from the PORT environment variable, with 8080 as the default.</p></div>
+</section>
+
+<section class="seg" id="s19">
+  <header><span class="num">19</span><h3>The unique field and 409 (not in P1, but in P2 and some assessment sets)</h3><span class="time">@ 47:30 · ~2.5 min</span></header>
+  <div class="cue open"><span class="label">OPEN</span><span>express/P2_books/server.js</span></div>
+  <div class="cue show"><span class="label">SHOW</span><span>Lines 78 to 82, then line 127 (POST), line 228 (PUT) and lines 238 to 240 (PATCH).</span></div>
+  <details class="code"><summary><span class="file">express/P2_books/server.js</span> · lines 78–82</summary><pre>78  // isbn is unique ignoring letter case; the record with id exceptId may keep its own value
+79  function isbnTaken(isbn, exceptId) {
+80    const wanted = isbn.toLowerCase();
+81    return books.some((b) =&gt; b.id !== exceptId &amp;&amp; b.isbn.toLowerCase() === wanted);
+82  }</pre></details><details class="code"><summary><span class="file">express/P2_books/server.js</span> · line 127</summary><pre>127    if (isbnTaken(r.value.isbn, null)) return res.status(409).json({ error: 'isbn already exists' });</pre></details><details class="code"><summary><span class="file">express/P2_books/server.js</span> · line 228</summary><pre>228    if (isbnTaken(r.value.isbn, books[i].id)) return res.status(409).json({ error: 'isbn already exists' });</pre></details><details class="code"><summary><span class="file">express/P2_books/server.js</span> · lines 238–240</summary><pre>238    if (r.value.isbn !== undefined &amp;&amp; isbnTaken(r.value.isbn, books[i].id)) {
+239      return res.status(409).json({ error: 'isbn already exists' });
+240    }</pre></details>
+  
+  
+  
+  
+  
+  <div class="say"><span class="label">SAY</span><p>P1 has no unique field, but P2 has isbn, and some assessment sets also have one. So let me show you the pattern from the P2 solution.</p><p>One small function, isbnTaken. It lowercases the value and checks if any other record already has it. The second parameter, exceptId, is the record being updated. A record is allowed to keep its own value.</p><p>POST calls it with null, because there is no record yet. If the value is taken, return 409. PUT calls it with the record’s own id. PATCH calls it only if isbn was sent.</p><p>On assessment day, if your paper has a unique field, add this one function and these three lines. If it does not, skip it.</p></div>
+</section>
+<h2 class="part">Part D · Run it and test it</h2>
+<section class="seg" id="s20">
+  <header><span class="num">20</span><h3>Start the server</h3><span class="time">@ 50:00 · ~1.5 min</span></header>
+  <div class="cue open"><span class="label">OPEN</span><span>Terminal in assessment-solutions/express/P1_products</span></div>
+  <div class="cue show"><span class="label">SHOW</span><span>Run <code>npm start</code>. Wait for the “listening” / “Started ProductsApplication” line.</span></div>
+  
+  
+  <div class="snippet"><div class="sniptitle">Commands</div><pre>npm start
+# or, on another port (macOS / Linux):
+PORT=9000 npm start</pre></div>
+  
+  
+  
+  <div class="say"><span class="label">SAY</span><p>Let us run it. In the project folder, type npm start. You see “Product Catalog API listening on port 8080”. The server is running and the list is empty.</p><p>If you see “port already in use”, an old server is still running. Stop it with Control C in its terminal, then start again.</p></div>
+</section>
+
+<section class="seg" id="s21">
+  <header><span class="num">21</span><h3>Test in Postman with the section 9 checklist</h3><span class="time">@ 51:30 · ~6 min</span></header>
+  <div class="cue open"><span class="label">OPEN</span><span>Postman (or Thunder Client), with P1_Product_Catalog.pdf page 2–3, section 9 visible</span></div>
+  <div class="cue show"><span class="label">SHOW</span><span>Run the requests in the table below in order. Show the status code and the body for each one.</span></div>
+  
+  
+  
+  <div class="tablewrap"><table class="tests"><thead><tr><th>#</th><th>Method</th><th>URL (base http://localhost:8080)</th><th>Body</th><th>Expect</th></tr></thead><tbody><tr><td>1</td><td><b>POST</b></td><td><code>/api/products</code></td><td><code>{"name":"Wireless Mouse","brand":"Logitech","category":"Electronics","price":799.5,"stock":40,"inStock":true}</code></td><td>201, body has an id</td></tr><tr><td>2</td><td><b>POST</b></td><td><code>/api/products</code></td><td><code>same body without "name"</code></td><td>400</td></tr><tr><td>3</td><td><b>POST</b></td><td><code>/api/products</code></td><td><code>same body with "price": 0</code></td><td>400</td></tr><tr><td>4</td><td><b>POST</b></td><td><code>/api/products</code></td><td><code>same body with "price": "100"</code></td><td>400</td></tr><tr><td>5</td><td><b>POST</b></td><td><code>/api/products</code></td><td><code>same body with "inStock": "yes"</code></td><td>400</td></tr><tr><td>6</td><td><b>POST</b></td><td><code>/api/products</code></td><td><code>same body with "category": "Banana"</code></td><td>400</td></tr><tr><td>7</td><td><b>POST</b></td><td><code>/api/products</code></td><td><code>{</code></td><td>400, JSON error, server still running</td></tr><tr><td>8</td><td><b>GET</b></td><td><code>/api/products</code></td><td><code>—</code></td><td>200, data, page 1, limit 10, total, totalPages</td></tr><tr><td>9</td><td><b>GET</b></td><td><code>/api/products/1</code></td><td><code>—</code></td><td>200, the same values</td></tr><tr><td>10</td><td><b>GET</b></td><td><code>/api/products/987654 and /api/products/abc</code></td><td><code>—</code></td><td>404 for both</td></tr><tr><td>11</td><td><b>PUT</b></td><td><code>/api/products/1</code></td><td><code>full body, e.g. "price": 999</code></td><td>200, new values, same id</td></tr><tr><td>12</td><td><b>PUT</b></td><td><code>/api/products/1 (body without "brand"), then /api/products/987654</code></td><td><code>full body</code></td><td>400; 404 (nothing created)</td></tr><tr><td>13</td><td><b>PATCH</b></td><td><code>/api/products/1</code></td><td><code>{"inStock":false}</code></td><td>200, only that field changed</td></tr><tr><td>14</td><td><b>PATCH</b></td><td><code>/api/products/1</code></td><td><code>{}</code></td><td>400</td></tr><tr><td>15</td><td><b>DELETE</b></td><td><code>/api/products/1, then GET it, then DELETE again</code></td><td><code>—</code></td><td>204 empty body, 404, 404</td></tr><tr><td>16</td><td><b>GET</b></td><td><code>/api/products?page=2&amp;limit=5 (after creating 12 records)</code></td><td><code>—</code></td><td>items 6 to 10, totalPages 3</td></tr><tr><td>17</td><td><b>GET</b></td><td><code>?limit=51, ?limit=0, ?page=0, ?page=abc</code></td><td><code>—</code></td><td>400 each</td></tr><tr><td>18</td><td><b>GET</b></td><td><code>?category=Banana, ?inStock=maybe</code></td><td><code>—</code></td><td>400 each</td></tr><tr><td>19</td><td><b>GET</b></td><td><code>?search=MOUSE and ?search=mouse</code></td><td><code>—</code></td><td>same total</td></tr><tr><td>20</td><td><b>GET</b></td><td><code>?sort=banana, ?order=sideways</code></td><td><code>—</code></td><td>400 each</td></tr><tr><td>21</td><td><b>GET</b></td><td><code>?minPrice=100&amp;maxPrice=10</code></td><td><code>—</code></td><td>200, empty data, total 0</td></tr><tr><td>22</td><td><b>GET</b></td><td><code>/api/nothing</code></td><td><code>—</code></td><td>404, JSON body</td></tr></tbody></table></div>
+<details class="code"><summary>Backup: the same first tests with curl (macOS / Linux / Git Bash)</summary><pre>curl -i -X POST http://localhost:8080/api/products -H "Content-Type: application/json" \
+  -d '{"name":"Wireless Mouse","brand":"Logitech","category":"Electronics","price":799.5,"stock":40,"inStock":true}'
+curl -i -X POST http://localhost:8080/api/products -H "Content-Type: application/json" -d '{'
+curl -i http://localhost:8080/api/products
+curl -i http://localhost:8080/api/products/abc
+curl -i -X PATCH http://localhost:8080/api/products/1 -H "Content-Type: application/json" -d '{"inStock":false}'
+curl -i -X DELETE http://localhost:8080/api/products/1
+curl -i "http://localhost:8080/api/products?minPrice=100&amp;maxPrice=10"
+curl -i http://localhost:8080/api/nothing</pre></details>
+  
+  
+  <div class="say"><span class="label">SAY</span><p>There is no evaluator for practice, so you test with Postman, Thunder Client or curl. The paper gives you a checklist in section 9. Let me run it now. I will go quickly; please pause the video and do the same on your own laptop.</p><p>For every POST, PUT and PATCH: choose Body, raw, JSON. That sets the Content-Type header to application/json. If you forget this, the body arrives empty.</p><p class="action">[Run tests 1 to 8.] The valid POST gives 201 with an id. Every broken body gives 400 with a JSON error, and the server is still running after the broken JSON.</p><p class="action">[Run tests 9 to 15.] GET by id, unknown ids, PUT, PATCH and DELETE. Look carefully at test 15: the delete returns 204 with nothing in the body, and the second delete is 404.</p><p class="action">[Run tests 16 to 22.] For test 16, I have created 12 records. page 2 with limit 5 gives records 6 to 10, and totalPages is 3. Then the bad query values, the search in upper and lower case, min greater than max, and the unknown route.</p><p>When everything passes, restart the server so it is empty, and run the checklist again. That is exactly what the evaluator does.</p></div>
+</section>
+<h2 class="part">Part E · How it is marked, and assessment day</h2>
+<section class="seg" id="s22">
+  <header><span class="num">22</span><h3>Watch the evaluator mark this solution (trainer screen)</h3><span class="time">@ 57:30 · ~3 min</span></header>
+  <div class="cue open"><span class="label">OPEN</span><span>A second terminal in assessment-platform (trainer machine)</span></div>
+  <div class="cue show"><span class="label">SHOW</span><span>Restart the Express server first (empty data). Then run the command below and scroll through the report to the Score and group table.</span></div>
+  
+  
+  <div class="snippet"><div class="sniptitle">Trainer-only command (students do not have this for practice)</div><pre>npm run trainer -- --set P1 --url http://localhost:8080</pre></div>
+  
+  
+  
+  <div class="say"><span class="label">SAY</span><p>Now let me show you how the evaluator sees your work. This is the trainer version, which prints every check. You do not get this tool for practice, but on assessment day the same kind of checks run on your API.</p><p>First I restart the server, so it is empty. Then I run the evaluator for set P1.</p><p>Look at the output. Each line is one check: PASS or FAIL, a code like C01, and a short name. The groups are the same as the marking scheme in section 10: Create, Read one, List basics, and so on.</p><p>At the bottom: Score 100 out of 100, and the marks per group. Every check is 1 mark, and it is all or nothing.</p><p>One more thing: a check can be blocked. If POST is broken, the checks that need records cannot run. That is why we say: build POST first.</p></div>
+</section>
+
+<section class="seg optional" id="s23">
+  <header><span class="num">23</span><h3>Optional: one small bug, and what it costs</h3><span class="time">optional · ~2 min</span></header>
+  <div class="cue open"><span class="label">OPEN</span><span>express/P1_products/server.js</span></div>
+  <div class="cue show"><span class="label">SHOW</span><span>Line 232: change <code>res.status(204).end();</code> to <code>res.json({ message: 'deleted' });</code>. Restart, rerun the evaluator, show the failed Delete checks. Then undo the change and restart.</span></div>
+  
+  
+  
+  
+  
+  
+  <div class="say"><span class="label">SAY</span><p>Let me show you how one small mistake costs marks. I change only the delete response, so it returns 200 instead of 204. Everything else still works.</p><p>I restart and run the evaluator again. Look: D01 and D02 now fail, because the paper says 204 with an empty body. Delete drops to 6 out of 8, and the score is 98. One line, two marks gone. The status codes in the paper are checked exactly.</p><p>Now I put it back the way it was.</p></div>
+</section>
+
+<section class="seg" id="s24">
+  <header><span class="num">24</span><h3>Assessment day: the kit, step by step</h3><span class="time">@ 60:30 · ~3 min</span></header>
+  <div class="cue open"><span class="label">OPEN</span><span>The assessment kit README (assessment-kit/README.md), or a slide with the steps below</span></div>
+  <div class="cue show"><span class="label">SHOW</span><span>The steps list below. Say each command slowly.</span></div>
+  
+  
+  
+  
+  <ol class="steps">
+<li><code>node --version</code> → v18 or higher (needed even for Spring Boot). Do <b>not</b> run <code>npm install</code> in the kit.</li>
+<li><code>npm run whoami</code> → registration number, 6-digit PIN from the slip, set code from the paper’s top-right box. Typo? <code>npm run whoami -- --change</code></li>
+<li>Own laptop only: the first laptop used is registered to the student. PIN is personal: if anyone else uses it, <b>both students get zero</b>.</li>
+<li>Build the API from the paper on port 8080.</li>
+<li>Restart the server (empty), then <code>npm run evaluate</code> → prints only “Submission recorded” and a run id. No marks are shown.</li>
+<li>Fix and run again as often as needed; restart before every run. Not empty → the kit stops and asks for a restart.</li>
+<li>“Saved on this computer but NOT recorded yet” → tell the invigilator, run <code>npm run submit-pending</code>.</li>
+</ol>
+  
+  <div class="say"><span class="label">SAY</span><p>Now, what happens on assessment day. You get a question paper, A1 to A8, and an assessment kit folder. The kit needs only Node.js, so even if you use Spring Boot, Node 18 or newer must be installed. Check it today with node --version. Do not run npm install inside the kit.</p><p>Step 1: in the kit folder, run npm run whoami. Type your registration number, the 6-digit PIN from your slip, and the set code from the box on your paper. If you type something wrong, run npm run whoami -- --change.</p><p>Use your own laptop. The first laptop you log in from is registered to you. Your PIN is personal. If anyone else uses your PIN, both students get zero.</p><p>Step 2: build your API from the paper, on port 8080.</p><p>Step 3: restart your server so it is empty, and in the kit folder run npm run evaluate. It runs the checks and sends your result to your trainer. It only prints “Submission recorded”. It does not show your marks.</p><p>You can fix your code and run evaluate again. Restart your server before every run. If the server is not empty, the kit stops and asks you to restart.</p><p>If you see “saved on this computer but NOT recorded yet”, tell the invigilator, and run npm run submit-pending.</p></div>
+</section>
+<h2 class="part">Part F · Strategy</h2>
+<section class="seg" id="s25">
+  <header><span class="num">25</span><h3>Strategy: how to get the most marks</h3><span class="time">@ 63:30 · ~3 min</span></header>
+  <div class="cue open"><span class="label">OPEN</span><span>This script page, “Strategy” card (or a slide)</span></div>
+  <div class="cue show"><span class="label">SHOW</span><span>The time plan and the mistakes list below.</span></div>
+  
+  
+  
+  
+  
+  <div id="strategy"><div class="grid2"><div><h4>Time plan</h4><ol class="steps">
+<li><b>Read</b> the whole paper (10 min). Write the mirror note: text 1, text 2, enum, decimal (+ range params), whole number, boolean, unique field?</li>
+<li><b>POST</b> with full validation + <b>GET /:id</b>. Test.</li>
+<li><b>Minimum list</b>, <b>PUT</b>, <b>PATCH</b>, <b>DELETE</b>, JSON 404 and broken-JSON handler. Test. (60 marks reachable)</li>
+<li><b>Pagination → filters → search → sort</b>, one at a time, testing after each.</li>
+<li>Last 10 min: re-read “rules that are easy to miss”, restart, <code>npm run evaluate</code>.</li>
+</ol></div><div><h4>Mistakes that cost the most</h4><ul>
+<li>Crashing on bad input / HTML error pages</li><li>Wrong status codes (201, 204 empty body, 404, 409)</li>
+<li>A bare array as the list</li><li>Wrong <code>total</code> (count after filters + search, before paging)</li>
+<li>Numbers sorted as text (9 before 10)</li><li>Accepting <code>"100"</code> or <code>"true"</code> as text</li>
+<li>Exact enum match, but case-insensitive search and text sort</li><li>Taking <code>id</code> from the body; a PUT that creates</li></ul></div></div></div>
+  <div class="say"><span class="label">SAY</span><p>Finally, a plan for the day.</p><p>First 10 minutes: read the whole paper. Make your mirror note: which field is text 1, text 2, enum, decimal, whole number, boolean, and is there a unique field. Copy the exact path and the exact names.</p><p>Then build POST, with full validation, and GET by id. Test them. That alone opens up most of the checks.</p><p>Then the minimum list, PUT, PATCH and DELETE, and the JSON 404 and broken JSON handlers. Test them. Now you have the 60 basic marks within reach.</p><p>Then pagination, then filters, then search, then sort. Add them one at a time, and test after each one. Do not try to write everything and test at the end.</p><p>Last 10 minutes: read the “rules that are easy to miss” again, restart your server, and run evaluate.</p><p>The mistakes that cost the most: crashing on bad input, wrong status codes, returning a bare array for the list, a wrong total, sorting numbers as text, and accepting “true” or “100” as text.</p></div>
+</section>
+
+<section class="seg" id="s26">
+  <header><span class="num">26</span><h3>Wrap-up and homework</h3><span class="time">@ 66:30 · ~1.5 min</span></header>
+  <div class="cue open"><span class="label">OPEN</span><span>P1_Product_Catalog.pdf</span></div>
+  <div class="cue show"><span class="label">SHOW</span><span>Page 1, the title again. Then show the P2 paper cover (P2_Library_Books.pdf) for a moment.</span></div>
+  
+  
+  
+  
+  
+  
+  <div class="say"><span class="label">SAY</span><p>Let us recap. Your assessment paper is a mirror of P1. Read sections 3 to 6 as a contract. Map your fields to the six types. Build POST first, then the basic CRUD, then the list features one by one. Test with the section 9 checklist, restart, and test again.</p><p>Your homework: build P2, the Library Books paper, yourself, without looking at any solution. It has a unique field, isbn, so you will practise the 409 rule too. Then test it with its section 9 checklist.</p><p>If any rule is still unclear, check the examples in section 7 first, then ask me. All the best, and see you on assessment day.</p></div>
+</section>
+</div></body></html>

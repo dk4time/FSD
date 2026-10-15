@@ -1,0 +1,13 @@
+{
+  "name": "a8-events",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Event Tickets API (A8) - Express solution",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}

@@ -1,0 +1,67 @@
+{
+  "setId": "A4",
+  "mode": "assessment",
+  "title": "Movie Catalog",
+  "resource": "movies",
+  "text1": {
+    "name": "title",
+    "minLen": 3,
+    "maxLen": 60,
+    "searchable": true,
+    "sortable": true
+  },
+  "text2": {
+    "name": "director",
+    "minLen": 2,
+    "maxLen": 40,
+    "searchable": true
+  },
+  "enum": {
+    "name": "genre",
+    "values": [
+      "Action",
+      "Comedy",
+      "Drama",
+      "Thriller",
+      "SciFi"
+    ],
+    "filterable": true
+  },
+  "amount": {
+    "name": "rating",
+    "exclusiveMin": 0,
+    "max": 10,
+    "genMin": 0.1,
+    "genDecimals": 1,
+    "rangeFilter": [
+      "minRating",
+      "maxRating"
+    ],
+    "sortable": true
+  },
+  "count": {
+    "name": "durationMinutes",
+    "integer": true,
+    "min": 1,
+    "max": 600,
+    "sortable": true
+  },
+  "flag": {
+    "name": "nowShowing",
+    "filterable": true
+  },
+  "uniqueCode": null,
+  "sample": {
+    "title": "Inception",
+    "director": "Christopher Nolan",
+    "genre": "SciFi",
+    "rating": 8.8,
+    "durationMinutes": 148,
+    "nowShowing": false
+  },
+  "sortFields": [
+    "title",
+    "rating",
+    "durationMinutes"
+  ]
+}

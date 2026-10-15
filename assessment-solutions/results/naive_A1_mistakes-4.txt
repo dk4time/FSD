@@ -1,0 +1,160 @@
+Evaluating set A1 at http://localhost:8080 (seed 1) ...
+Set A1 - Employee Directory  (http://localhost:8080/api/employees)
+
+-- Create (POST) --
+PASS    C01  POST a valid record
+PASS    C02  Created record has a non-empty id
+PASS    C03  Response echoes every submitted field
+PASS    C04  Two creates get different ids
+PASS    C05  Created record can be fetched
+PASS    C06  Missing required text field
+PASS    C07  Missing required numeric field
+PASS    C08  Wrong types
+PASS    C09  Amount not above 0
+PASS    C10  Text1 shorter than minimum
+PASS    C11  Invalid enum value
+PASS    C12  Empty object body {}
+PASS    C13  Malformed JSON body
+PASS    C14  Uniqueness rule
+-- Read one (GET /:id) --
+PASS    R01  GET an existing record
+PASS    R02  Body fields equal what was stored
+PASS    R03  body.id equals the requested id
+PASS    R04  Unknown numeric id
+PASS    R05  404 body is JSON with an error string
+PASS    R06  Non-id-looking path (/abc-not-an-id)
+PASS    R07  Content-Type is JSON
+PASS    R08  Five different seeded ids
+-- List basics (GET) --
+PASS    L01  GET list
+PASS    L02  body.data is an array
+PASS    L03  page, limit, total, totalPages are numbers
+PASS    L04  Defaults with no params
+PASS    L05  Default page size
+FAIL    L06  total is correct
+          sent:     GET /api/employees
+          expected: total = 46
+          got:      200 {"data":[{"id":1,"name":"beacon urban lantern","designation":"Avenue House","department":"Support","salary":2485581,"experienceYears":6,"isActive":false,"employeeCode":"EMP-2959"},{"id":2,"name":"Ripp...
+PASS    L07  Every item is well formed
+PASS    L08  Default order
+-- Update (PUT) --
+PASS    U01  PUT a valid full record
+PASS    U02  Response reflects the new values
+PASS    U03  id is unchanged
+PASS    U04  GET after PUT shows new values
+PASS    U05  PUT missing a required field
+PASS    U06  PUT with an invalid value
+PASS    U07  PUT on an unknown id
+PASS    U08  Other records untouched
+PASS    U09  id inside the body is ignored
+PASS    U10  Uniqueness on PUT
+-- Update (PATCH) --
+PASS    P01  PATCH one field
+PASS    P02  Only that field changed
+PASS    P03  PATCH several fields
+PASS    P04  PATCH with empty body {}
+PASS    P05  PATCH with an invalid enum value
+PASS    P06  PATCH with a wrong type
+PASS    P07  PATCH on an unknown id
+PASS    P08  Unknown fields ignored
+PASS    P09  PATCH cannot change id
+PASS    P10  Uniqueness / persistence
+-- Delete (DELETE) --
+PASS    D01  DELETE an existing record
+PASS    D02  204 response has an empty body
+PASS    D03  GET after DELETE
+PASS    D04  DELETE the same id again
+PASS    D05  DELETE an unknown id
+FAIL    D06  List total after DELETE
+          sent:     GET /api/employees?limit=1
+          expected: total 0 (was 1)
+          got:      200 {"data":[{"id":1,"name":"beacon urban lantern","designation":"Avenue House","department":"Support","salary":2485581,"experienceYears":6,"isActive":false,"employeeCode":"EMP-2959"}],"page":1,"limit":1,...
+PASS    D07  Other records unaffected
+PASS    D08  Deleted record absent from the full list
+-- Pagination --
+PASS    G01  limit=5
+PASS    G02  page=2&limit=5
+PASS    G03  Page 1 and page 2
+PASS    G04  Last page
+FAIL    G05  totalPages
+          sent:     GET /api/employees?limit=7
+          expected: totalPages = 7 (total 46, limit 7)
+          got:      200 {"data":[{"id":1,"name":"beacon urban lantern","designation":"Avenue House","department":"Support","salary":2485581,"experienceYears":6,"isActive":false,"employeeCode":"EMP-2959"},{"id":2,"name":"Ripp...
+PASS    G06  Walk every page (limit=10)
+PASS    G07  page beyond the last page
+PASS    G08  page=0
+PASS    G09  page=-1
+PASS    G10  limit=0
+PASS    G11  limit=51 (maximum is 50)
+PASS    G12  Non-integers
+-- Filter --
+PASS    F01  Filter by one enum value
+FAIL    F02  Every enum value
+          sent:     GET /api/employees?department=Engineering&limit=1
+          expected: total 11 for department=Engineering
+          got:      200 {"data":[{"id":5,"name":"Lagoon velvet 78","designation":"South","department":"Engineering","salary":1405.25,"experienceYears":25,"isActive":false,"employeeCode":"EMP-4238"}],"page":1,"limit":1,"total...
+PASS    F03  flag=true
+PASS    F04  flag=false
+PASS    F05  min<Amount> only
+PASS    F06  max<Amount> only
+PASS    F07  min and max together
+FAIL    F08  Filter + pagination
+          sent:     GET /api/employees?department=Engineering&page=2&limit=3
+          expected: total 11, totalPages 4, ids 26, 31, 32
+          got:      200 {"data":[{"id":26,"name":"Glacier Falcon","designation":"Labs","department":"Engineering","salary":2575090.43,"experienceYears":38,"isActive":true,"employeeCode":"EMP-5562"},{"id":31,"name":"nimbus ju...
+PASS    F09  Enum + flag combined
+PASS    F10  Invalid filter values
+-- Search --
+PASS    S01  Search a text1 word
+PASS    S02  Case-insensitive
+PASS    S03  Search a text2 word
+PASS    S04  Term that matches nothing
+PASS    S05  total equals the expected count
+FAIL    S06  Search + pagination
+          sent:     GET /api/employees?search=urban&page=2&limit=2
+          expected: total 10, totalPages 5, ids 22, 23
+          got:      200 {"data":[{"id":22,"name":"velvet Vortex Urban","designation":"Point Central","department":"Support","salary":163.2,"experienceYears":45,"isActive":false,"employeeCode":"EMP-3483"},{"id":23,"name":"yar...
+PASS    S07  Partial term (first 3 letters)
+FAIL    S08  Empty search= value
+          sent:     GET /api/employees?search=
+          expected: same as no search: total 46, first page in creation order
+          got:      200 {"data":[{"id":1,"name":"beacon urban lantern","designation":"Avenue House","department":"Support","salary":2485581,"experienceYears":6,"isActive":false,"employeeCode":"EMP-2959"},{"id":2,"name":"Ripp...
+-- Sort --
+PASS    O01  sort=<amount> ascending
+PASS    O02  sort=<amount>&order=desc
+PASS    O03  sort=<text1> ascending
+PASS    O04  sort=<count> ascending
+PASS    O05  Invalid sort field (sort=banana)
+PASS    O06  Invalid order (order=sideways)
+-- Combined queries --
+PASS    X01  Search + filter
+FAIL    X02  Filter + sort + pagination
+          sent:     GET /api/employees?department=Engineering&sort=salary&order=desc&page=2&limit=3
+          expected: total 11, totalPages 4, salary values [29570.56,21845.2,17895.95]
+          got:      200 {"data":[{"id":32,"name":"falcon urban","designation":"Central","department":"Engineering","salary":29570.56,"experienceYears":8,"isActive":false,"employeeCode":"EMP-4078"},{"id":38,"name":"Lantern ur...
+FAIL    X03  Search + filter + sort + page together
+          sent:     GET /api/employees?search=urban&department=Sales&sort=experienceYears&order=asc&page=1&limit=2
+          expected: total 4, totalPages 2, experienceYears values [16,31]
+          got:      200 {"data":[{"id":23,"name":"yarrow jasper Urban 93","designation":"North Market","department":"Sales","salary":9927658.25,"experienceYears":16,"isActive":true,"employeeCode":"EMP-2636"},{"id":28,"name":...
+PASS    X04  min greater than max
+-- HTTP basics --
+PASS    H01  JSON responses
+PASS    H02  Unknown route (/api/nothing)
+
+Score: 91 / 100  (passed 91, failed 9, blocked 0)
+
+Group                 Passed
+Create (POST)          14 / 14
+Read one (GET /:id)     8 / 8
+List basics (GET)       7 / 8
+Update (PUT)           10 / 10
+Update (PATCH)         10 / 10
+Delete (DELETE)         7 / 8
+Pagination             11 / 12
+Filter                  8 / 10
+Search                  6 / 8
+Sort                    6 / 6
+Combined queries        2 / 4
+HTTP basics             2 / 2
+
+Seed: 1   (repeat with --seed 1)

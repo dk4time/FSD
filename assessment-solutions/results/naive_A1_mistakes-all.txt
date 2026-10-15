@@ -1,0 +1,290 @@
+Evaluating set A1 at http://localhost:8080 (seed 1) ...
+Set A1 - Employee Directory  (http://localhost:8080/api/employees)
+
+-- Create (POST) --
+PASS    C01  POST a valid record
+PASS    C02  Created record has a non-empty id
+PASS    C03  Response echoes every submitted field
+PASS    C04  Two creates get different ids
+PASS    C05  Created record can be fetched
+PASS    C06  Missing required text field
+PASS    C07  Missing required numeric field
+PASS    C08  Wrong types
+PASS    C09  Amount not above 0
+PASS    C10  Text1 shorter than minimum
+PASS    C11  Invalid enum value
+PASS    C12  Empty object body {}
+FAIL    C13  Malformed JSON body
+          sent:     POST /api/employees {"name": "Broken record", "salary": 12,
+          expected: 400 with a JSON error body ("error" or "message")
+          got:      400 <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>SyntaxError: Expected double-quoted property name in JSON at position 39 (line 1 column 40)<br> ...
+PASS    C14  Uniqueness rule
+-- Read one (GET /:id) --
+PASS    R01  GET an existing record
+PASS    R02  Body fields equal what was stored
+PASS    R03  body.id equals the requested id
+PASS    R04  Unknown numeric id
+PASS    R05  404 body is JSON with an error string
+FAIL    R06  Non-id-looking path (/abc-not-an-id)
+          sent:     GET /api/employees/abc-not-an-id
+          expected: 404 (not 400 or 500)
+          got:      400 {"error":"id must be a number"}
+PASS    R07  Content-Type is JSON
+PASS    R08  Five different seeded ids
+-- List basics (GET) --
+PASS    L01  GET list
+FAIL    L02  body.data is an array
+          sent:     GET /api/employees
+          expected: 200 with "data" as an array
+          got:      200 [{"id":1,"name":"beacon urban lantern","designation":"Avenue House","department":"Support","salary":2485581,"experienceYears":6,"isActive":false,"employeeCode":"EMP-2959"},{"id":2,"name":"Ripple Beaco...
+FAIL    L03  page, limit, total, totalPages are numbers
+          sent:     GET /api/employees
+          expected: page, limit, total and totalPages are JSON numbers
+          got:      200 [{"id":1,"name":"beacon urban lantern","designation":"Avenue House","department":"Support","salary":2485581,"experienceYears":6,"isActive":false,"employeeCode":"EMP-2959"},{"id":2,"name":"Ripple Beaco...
+FAIL    L04  Defaults with no params
+          sent:     GET /api/employees
+          expected: page = 1 and limit = 10
+          got:      200 [{"id":1,"name":"beacon urban lantern","designation":"Avenue House","department":"Support","salary":2485581,"experienceYears":6,"isActive":false,"employeeCode":"EMP-2959"},{"id":2,"name":"Ripple Beaco...
+FAIL    L05  Default page size
+          sent:     GET /api/employees
+          expected: 10 items in data
+          got:      200 [{"id":1,"name":"beacon urban lantern","designation":"Avenue House","department":"Support","salary":2485581,"experienceYears":6,"isActive":false,"employeeCode":"EMP-2959"},{"id":2,"name":"Ripple Beaco...
+FAIL    L06  total is correct
+          sent:     GET /api/employees
+          expected: total = 46
+          got:      200 [{"id":1,"name":"beacon urban lantern","designation":"Avenue House","department":"Support","salary":2485581,"experienceYears":6,"isActive":false,"employeeCode":"EMP-2959"},{"id":2,"name":"Ripple Beaco...
+FAIL    L07  Every item is well formed
+          sent:     GET /api/employees?limit=50
+          expected: 200 with items in data
+          got:      200 [{"id":1,"name":"beacon urban lantern","designation":"Avenue House","department":"Support","salary":2485581,"experienceYears":6,"isActive":false,"employeeCode":"EMP-2959"},{"id":2,"name":"Ripple Beaco...
+FAIL    L08  Default order
+          sent:     GET /api/employees
+          expected: ids in creation order: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10
+          got:      200 [{"id":1,"name":"beacon urban lantern","designation":"Avenue House","department":"Support","salary":2485581,"experienceYears":6,"isActive":false,"employeeCode":"EMP-2959"},{"id":2,"name":"Ripple Beaco...
+-- Update (PUT) --
+PASS    U01  PUT a valid full record
+PASS    U02  Response reflects the new values
+PASS    U03  id is unchanged
+PASS    U04  GET after PUT shows new values
+PASS    U05  PUT missing a required field
+PASS    U06  PUT with an invalid value
+FAIL    U07  PUT on an unknown id
+          sent:     PUT /api/employees/987654321 {"name":"Marble harvest","designation":"Works","department":"Sales","salary":195.32,"experienceYears":12,"isActive":true,"employeeCode":"EMP-4998"}
+          expected: 404 (PUT never creates)
+          got:      201 {"id":53,"name":"Marble harvest","designation":"Works","department":"Sales","salary":195.32,"experienceYears":12,"isActive":true,"employeeCode":"EMP-4998"}
+PASS    U08  Other records untouched
+PASS    U09  id inside the body is ignored
+PASS    U10  Uniqueness on PUT
+-- Update (PATCH) --
+PASS    P01  PATCH one field
+PASS    P02  Only that field changed
+PASS    P03  PATCH several fields
+PASS    P04  PATCH with empty body {}
+PASS    P05  PATCH with an invalid enum value
+PASS    P06  PATCH with a wrong type
+FAIL    P07  PATCH on an unknown id
+          sent:     PATCH /api/employees/no-such-id {"experienceYears":0}
+          expected: 404
+          got:      400 {"error":"id must be a number"}
+PASS    P08  Unknown fields ignored
+PASS    P09  PATCH cannot change id
+PASS    P10  Uniqueness / persistence
+-- Delete (DELETE) --
+FAIL    D01  DELETE an existing record
+          sent:     DELETE /api/employees/66
+          expected: 204 No Content
+          got:      200 {"message":"Deleted","record":{"id":66,"name":"Zenith Meadow","designation":"Point","department":"Sales","salary":63106.9,"experienceYears":19,"isActive":false,"employeeCode":"EMP-6508"}}
+FAIL    D02  204 response has an empty body
+          sent:     DELETE /api/employees/67
+          expected: 204 with an empty body
+          got:      200 {"message":"Deleted","record":{"id":67,"name":"sierra Lantern falcon","designation":"Valley","department":"Engineering","salary":2.3,"experienceYears":39,"isActive":false,"employeeCode":"EMP-9669"}}
+PASS    D03  GET after DELETE
+PASS    D04  DELETE the same id again
+FAIL    D05  DELETE an unknown id
+          sent:     DELETE /api/employees/no-such-id
+          expected: 404
+          got:      400 {"error":"id must be a number"}
+FAIL    D06  List total after DELETE
+          sent:     GET /api/employees?limit=1
+          expected: list with a numeric total
+          got:      200 [{"id":1,"name":"beacon urban lantern","designation":"Avenue House","department":"Support","salary":2485581,"experienceYears":6,"isActive":false,"employeeCode":"EMP-2959"}]
+PASS    D07  Other records unaffected
+FAIL    D08  Deleted record absent from the full list
+          sent:     GET /api/employees?page=1&limit=50
+          expected: every page of the list readable
+          got:      200 [{"id":1,"name":"beacon urban lantern","designation":"Avenue House","department":"Support","salary":2485581,"experienceYears":6,"isActive":false,"employeeCode":"EMP-2959"},{"id":2,"name":"Ripple Beaco...
+-- Pagination --
+FAIL    G01  limit=5
+          sent:     GET /api/employees?limit=5
+          expected: exactly 5 items
+          got:      200 [{"id":1,"name":"beacon urban lantern","designation":"Avenue House","department":"Support","salary":2485581,"experienceYears":6,"isActive":false,"employeeCode":"EMP-2959"},{"id":2,"name":"Ripple Beaco...
+FAIL    G02  page=2&limit=5
+          sent:     GET /api/employees?page=2&limit=5
+          expected: items 6-10 in creation order: ids 6, 7, 8, 9, 10
+          got:      200 [{"id":6,"name":"garnet Harvest PRIME","designation":"Central","department":"Finance","salary":2.17,"experienceYears":14,"isActive":true,"employeeCode":"EMP-3960"},{"id":7,"name":"Cedar Island 64","de...
+FAIL    G03  Page 1 and page 2
+          sent:     GET /api/employees?page=1&limit=5
+          expected: two non-empty pages
+          got:      200 [{"id":1,"name":"beacon urban lantern","designation":"Avenue House","department":"Support","salary":2485581,"experienceYears":6,"isActive":false,"employeeCode":"EMP-2959"},{"id":2,"name":"Ripple Beaco...
+FAIL    G04  Last page
+          sent:     GET /api/employees?page=7&limit=7
+          expected: page 7 with limit 7 holds the remainder: ids 43, 44, 45, 46
+          got:      200 [{"id":43,"name":"meadow bramble 70","designation":"North Market Oakridge","department":"Support","salary":32263.14,"experienceYears":8,"isActive":false,"employeeCode":"EMP-8216"},{"id":44,"name":"Fal...
+FAIL    G05  totalPages
+          sent:     GET /api/employees?limit=7
+          expected: totalPages = 7 (total 46, limit 7)
+          got:      200 [{"id":1,"name":"beacon urban lantern","designation":"Avenue House","department":"Support","salary":2485581,"experienceYears":6,"isActive":false,"employeeCode":"EMP-2959"},{"id":2,"name":"Ripple Beaco...
+FAIL    G06  Walk every page (limit=10)
+          sent:     GET /api/employees?page=1&limit=10
+          expected: every page readable
+          got:      200 [{"id":1,"name":"beacon urban lantern","designation":"Avenue House","department":"Support","salary":2485581,"experienceYears":6,"isActive":false,"employeeCode":"EMP-2959"},{"id":2,"name":"Ripple Beaco...
+FAIL    G07  page beyond the last page
+          sent:     GET /api/employees?page=6
+          expected: 200 with empty data for page 6
+          got:      200 []
+FAIL    G08  page=0
+          sent:     GET /api/employees?page=0
+          expected: 400
+          got:      200 [{"id":1,"name":"beacon urban lantern","designation":"Avenue House","department":"Support","salary":2485581,"experienceYears":6,"isActive":false,"employeeCode":"EMP-2959"},{"id":2,"name":"Ripple Beaco...
+PASS    G09  page=-1
+PASS    G10  limit=0
+FAIL    G11  limit=51 (maximum is 50)
+          sent:     GET /api/employees?limit=50
+          expected: 200 with 46 items for limit=50
+          got:      200 [{"id":1,"name":"beacon urban lantern","designation":"Avenue House","department":"Support","salary":2485581,"experienceYears":6,"isActive":false,"employeeCode":"EMP-2959"},{"id":2,"name":"Ripple Beaco...
+PASS    G12  Non-integers
+-- Filter --
+FAIL    F01  Filter by one enum value
+          sent:     GET /api/employees?department=Engineering&limit=50
+          expected: department=Engineering: total 11, exactly the matching records
+          got:      200 [{"id":5,"name":"Lagoon velvet 78","designation":"South","department":"Engineering","salary":1405.25,"experienceYears":25,"isActive":false,"employeeCode":"EMP-4238"},{"id":15,"name":"horizon Prime","d...
+FAIL    F02  Every enum value
+          sent:     GET /api/employees?department=Engineering&limit=1
+          expected: total 11 for department=Engineering
+          got:      200 [{"id":5,"name":"Lagoon velvet 78","designation":"South","department":"Engineering","salary":1405.25,"experienceYears":25,"isActive":false,"employeeCode":"EMP-4238"}]
+FAIL    F03  flag=true
+          sent:     GET /api/employees?isActive=true&limit=50
+          expected: isActive=true: total 24, exactly the matching records
+          got:      200 [{"id":3,"name":"Horizon Ripple","designation":"North","department":"Support","salary":415.73,"experienceYears":28,"isActive":true,"employeeCode":"EMP-7157"},{"id":4,"name":"quartz crystal cedar 81","...
+FAIL    F04  flag=false
+          sent:     GET /api/employees?isActive=false&limit=50
+          expected: isActive=false: total 22, exactly the matching records
+          got:      200 [{"id":1,"name":"beacon urban lantern","designation":"Avenue House","department":"Support","salary":2485581,"experienceYears":6,"isActive":false,"employeeCode":"EMP-2959"},{"id":2,"name":"Ripple Beaco...
+FAIL    F05  min<Amount> only
+          sent:     GET /api/employees?minSalary=5923.14&limit=50
+          expected: minSalary=5923.14: total 23, exactly the matching records
+          got:      200 [{"id":1,"name":"beacon urban lantern","designation":"Avenue House","department":"Support","salary":2485581,"experienceYears":6,"isActive":false,"employeeCode":"EMP-2959"},{"id":2,"name":"Ripple Beaco...
+FAIL    F06  max<Amount> only
+          sent:     GET /api/employees?maxSalary=1405.25&limit=50
+          expected: maxSalary=1405.25: total 17, exactly the matching records
+          got:      200 [{"id":3,"name":"Horizon Ripple","designation":"North","department":"Support","salary":415.73,"experienceYears":28,"isActive":true,"employeeCode":"EMP-7157"},{"id":5,"name":"Lagoon velvet 78","designa...
+FAIL    F07  min and max together
+          sent:     GET /api/employees?minSalary=1769.14&maxSalary=7584.15&limit=50
+          expected: minSalary=1769.14&maxSalary=7584.15 (both boundaries inclusive): total 7, exactly the matching records
+          got:      200 [{"id":7,"name":"Cedar Island 64","designation":"Station","department":"Sales","salary":1769.14,"experienceYears":37,"isActive":true,"employeeCode":"EMP-3075"},{"id":10,"name":"cedar Quill","designati...
+FAIL    F08  Filter + pagination
+          sent:     GET /api/employees?department=Engineering&page=2&limit=3
+          expected: total 11, totalPages 4, ids 26, 31, 32
+          got:      200 [{"id":26,"name":"Glacier Falcon","designation":"Labs","department":"Engineering","salary":2575090.43,"experienceYears":38,"isActive":true,"employeeCode":"EMP-5562"},{"id":31,"name":"nimbus juniper","...
+FAIL    F09  Enum + flag combined
+          sent:     GET /api/employees?department=HR&isActive=true&limit=50
+          expected: department=HR&isActive=true: total 5, exactly the matching records
+          got:      200 [{"id":21,"name":"beacon cedar","designation":"Works Market","department":"HR","salary":10.24,"experienceYears":13,"isActive":true,"employeeCode":"EMP-5960"},{"id":34,"name":"Quill Dune Saffron","desi...
+PASS    F10  Invalid filter values
+-- Search --
+FAIL    S01  Search a text1 word
+          sent:     GET /api/employees?search=urban&limit=50
+          expected: non-empty result, every item contains "urban" in name or designation
+          got:      200 [{"id":1,"name":"beacon urban lantern","designation":"Avenue House","department":"Support","salary":2485581,"experienceYears":6,"isActive":false,"employeeCode":"EMP-2959"},{"id":16,"name":"nimbus urba...
+FAIL    S02  Case-insensitive
+          sent:     GET /api/employees?search=PRIME
+          expected: total 5 for search=PRIME (case must not matter)
+          got:      200 [{"id":6,"name":"garnet Harvest PRIME","designation":"Central","department":"Finance","salary":2.17,"experienceYears":14,"isActive":true,"employeeCode":"EMP-3960"},{"id":19,"name":"Ripple 69 PRIME","d...
+FAIL    S03  Search a text2 word
+          sent:     GET /api/employees?search=oakridge&limit=50
+          expected: search=oakridge (a word that only appears in designation): total 3, exactly the matching records
+          got:      200 []
+FAIL    S04  Term that matches nothing
+          sent:     GET /api/employees?search=zzqxj
+          expected: 200, data [], total 0, totalPages 0
+          got:      200 []
+FAIL    S05  total equals the expected count
+          sent:     GET /api/employees?search=urban&limit=50
+          expected: search=urban: total 10, exactly the matching records
+          got:      200 [{"id":1,"name":"beacon urban lantern","designation":"Avenue House","department":"Support","salary":2485581,"experienceYears":6,"isActive":false,"employeeCode":"EMP-2959"},{"id":16,"name":"nimbus urba...
+FAIL    S06  Search + pagination
+          sent:     GET /api/employees?search=urban&page=2&limit=2
+          expected: total 10, totalPages 5, ids 22, 23
+          got:      200 [{"id":28,"name":"Dune Falcon urban","designation":"Labs","department":"Sales","salary":2210379.21,"experienceYears":31,"isActive":true,"employeeCode":"EMP-7973"},{"id":29,"name":"Wander urban","desig...
+FAIL    S07  Partial term (first 3 letters)
+          sent:     GET /api/employees?search=urb&limit=50
+          expected: search=urb: total 10, exactly the matching records
+          got:      200 [{"id":1,"name":"beacon urban lantern","designation":"Avenue House","department":"Support","salary":2485581,"experienceYears":6,"isActive":false,"employeeCode":"EMP-2959"},{"id":16,"name":"nimbus urba...
+FAIL    S08  Empty search= value
+          sent:     GET /api/employees?search=
+          expected: same as no search: total 46, first page in creation order
+          got:      200 [{"id":1,"name":"beacon urban lantern","designation":"Avenue House","department":"Support","salary":2485581,"experienceYears":6,"isActive":false,"employeeCode":"EMP-2959"},{"id":2,"name":"Ripple Beaco...
+-- Sort --
+FAIL    O01  sort=<amount> ascending
+          sent:     GET /api/employees?sort=salary&limit=50
+          expected: all 46 records on one page
+          got:      200 [{"id":8,"name":"Marble Cedar jasper","designation":"Avenue","department":"HR","salary":1.24,"experienceYears":10,"isActive":false,"employeeCode":"EMP-3625"},{"id":21,"name":"beacon cedar","designatio...
+FAIL    O02  sort=<amount>&order=desc
+          sent:     GET /api/employees?sort=salary&limit=50&order=desc
+          expected: all 46 records on one page
+          got:      200 [{"id":23,"name":"yarrow jasper Urban 93","designation":"North Market","department":"Sales","salary":9927658.25,"experienceYears":16,"isActive":true,"employeeCode":"EMP-2636"},{"id":44,"name":"Falcon ...
+FAIL    O03  sort=<text1> ascending
+          sent:     GET /api/employees?sort=name&limit=50
+          expected: all 46 records on one page
+          got:      200 [{"id":21,"name":"beacon cedar","designation":"Works Market","department":"HR","salary":10.24,"experienceYears":13,"isActive":true,"employeeCode":"EMP-5960"},{"id":1,"name":"beacon urban lantern","des...
+FAIL    O04  sort=<count> ascending
+          sent:     GET /api/employees?sort=experienceYears&limit=50
+          expected: all 46 records on one page
+          got:      200 [{"id":15,"name":"horizon Prime","designation":"Corner","department":"Engineering","salary":4043,"experienceYears":0,"isActive":true,"employeeCode":"EMP-7722"},{"id":36,"name":"Falcon oasis raven","de...
+PASS    O05  Invalid sort field (sort=banana)
+PASS    O06  Invalid order (order=sideways)
+-- Combined queries --
+FAIL    X01  Search + filter
+          sent:     GET /api/employees?search=urban&department=Sales&limit=50
+          expected: total 4 (search AND department)
+          got:      200 [{"id":16,"name":"nimbus urban","designation":"Labs","department":"Sales","salary":930.96,"experienceYears":39,"isActive":true,"employeeCode":"EMP-9445"},{"id":28,"name":"Dune Falcon urban","designati...
+FAIL    X02  Filter + sort + pagination
+          sent:     GET /api/employees?department=Engineering&sort=salary&order=desc&page=2&limit=3
+          expected: total 11, totalPages 4, salary values [29570.56,21845.2,17895.95]
+          got:      200 [{"id":32,"name":"falcon urban","designation":"Central","department":"Engineering","salary":29570.56,"experienceYears":8,"isActive":false,"employeeCode":"EMP-4078"},{"id":26,"name":"Glacier Falcon","d...
+FAIL    X03  Search + filter + sort + page together
+          sent:     GET /api/employees?search=urban&department=Sales&sort=experienceYears&order=asc&page=1&limit=2
+          expected: total 4, totalPages 2, experienceYears values [16,31]
+          got:      200 [{"id":28,"name":"Dune Falcon urban","designation":"Labs","department":"Sales","salary":2210379.21,"experienceYears":31,"isActive":true,"employeeCode":"EMP-7973"},{"id":16,"name":"nimbus urban","desig...
+FAIL    X04  min greater than max
+          sent:     GET /api/employees?minSalary=10000000&maxSalary=1.24
+          expected: 200, data [], total 0, totalPages 0
+          got:      200 []
+-- HTTP basics --
+PASS    H01  JSON responses
+PASS    H02  Unknown route (/api/nothing)
+
+Score: 50 / 100  (passed 50, failed 50, blocked 0)
+
+Group                 Passed
+Create (POST)          13 / 14
+Read one (GET /:id)     7 / 8
+List basics (GET)       1 / 8
+Update (PUT)            9 / 10
+Update (PATCH)          9 / 10
+Delete (DELETE)         3 / 8
+Pagination              3 / 12
+Filter                  1 / 10
+Search                  0 / 8
+Sort                    2 / 6
+Combined queries        0 / 4
+HTTP basics             2 / 2
+
+Seed: 1   (repeat with --seed 1)

@@ -1,0 +1,73 @@
+{
+  "setId": "A1",
+  "mode": "assessment",
+  "title": "Employee Directory",
+  "resource": "employees",
+  "text1": {
+    "name": "name",
+    "minLen": 3,
+    "maxLen": 60,
+    "searchable": true,
+    "sortable": true
+  },
+  "text2": {
+    "name": "designation",
+    "minLen": 2,
+    "maxLen": 40,
+    "searchable": true
+  },
+  "enum": {
+    "name": "department",
+    "values": [
+      "Engineering",
+      "HR",
+      "Finance",
+      "Sales",
+      "Support"
+    ],
+    "filterable": true
+  },
+  "amount": {
+    "name": "salary",
+    "exclusiveMin": 0,
+    "max": 10000000,
+    "genMin": 1,
+    "genDecimals": 2,
+    "rangeFilter": [
+      "minSalary",
+      "maxSalary"
+    ],
+    "sortable": true
+  },
+  "count": {
+    "name": "experienceYears",
+    "integer": true,
+    "min": 0,
+    "max": 45,
+    "sortable": true
+  },
+  "flag": {
+    "name": "isActive",
+    "filterable": true
+  },
+  "uniqueCode": {
+    "name": "employeeCode",
+    "minLen": 4,
+    "maxLen": 20,
+    "caseInsensitiveUnique": true
+  },
+  "sample": {
+    "name": "Priya Raman",
+    "designation": "Software Engineer",
+    "department": "Engineering",
+    "salary": 65000,
+    "experienceYears": 3,
+    "isActive": true,
+    "employeeCode": "EMP-1042"
+  },
+  "sortFields": [
+    "name",
+    "salary",
+    "experienceYears"
+  ]
+}

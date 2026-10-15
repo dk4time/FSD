@@ -1,0 +1,7 @@
+node_modules/
+dist/
+collector/.env
+.student.json
+.pending/
+kits/assessment/config.json
+.DS_Store

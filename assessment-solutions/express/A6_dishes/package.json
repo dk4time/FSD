@@ -1,0 +1,13 @@
+{
+  "name": "a6-dishes",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Restaurant Menu API (A6) - Express solution",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}

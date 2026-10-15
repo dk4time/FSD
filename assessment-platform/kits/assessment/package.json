@@ -1,0 +1,14 @@
+{
+  "name": "assessment-kit",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Checks your REST API and sends the result to your trainer",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "evaluate": "node cli.js evaluate",
+    "whoami": "node cli.js whoami",
+    "submit-pending": "node cli.js submit-pending"
+  }
+}

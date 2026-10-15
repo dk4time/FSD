@@ -1,0 +1,8 @@
+Checking your API at http://localhost:8080 ...
+Running checks: 25 of 100 attempted
+Running checks: 50 of 100 attempted
+Running checks: 75 of 100 attempted
+Running checks: 100 of 100 attempted
+Submission recorded. Your result has been sent to your trainer.
+Run id: 3468c466-54f8-4be0-a1fd-a709efb2fb24
+exit 0

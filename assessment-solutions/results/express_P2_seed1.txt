@@ -1,0 +1,134 @@
+Evaluating set P2 at http://localhost:8080 (seed 1) ...
+Set P2 - Library Books  (http://localhost:8080/api/books)
+
+-- Create (POST) --
+PASS    C01  POST a valid record
+PASS    C02  Created record has a non-empty id
+PASS    C03  Response echoes every submitted field
+PASS    C04  Two creates get different ids
+PASS    C05  Created record can be fetched
+PASS    C06  Missing required text field
+PASS    C07  Missing required numeric field
+PASS    C08  Wrong types
+PASS    C09  Amount not above 0
+PASS    C10  Text1 shorter than minimum
+PASS    C11  Invalid enum value
+PASS    C12  Empty object body {}
+PASS    C13  Malformed JSON body
+PASS    C14  Uniqueness rule
+-- Read one (GET /:id) --
+PASS    R01  GET an existing record
+PASS    R02  Body fields equal what was stored
+PASS    R03  body.id equals the requested id
+PASS    R04  Unknown numeric id
+PASS    R05  404 body is JSON with an error string
+PASS    R06  Non-id-looking path (/abc-not-an-id)
+PASS    R07  Content-Type is JSON
+PASS    R08  Five different seeded ids
+-- List basics (GET) --
+PASS    L01  GET list
+PASS    L02  body.data is an array
+PASS    L03  page, limit, total, totalPages are numbers
+PASS    L04  Defaults with no params
+PASS    L05  Default page size
+PASS    L06  total is correct
+PASS    L07  Every item is well formed
+PASS    L08  Default order
+-- Update (PUT) --
+PASS    U01  PUT a valid full record
+PASS    U02  Response reflects the new values
+PASS    U03  id is unchanged
+PASS    U04  GET after PUT shows new values
+PASS    U05  PUT missing a required field
+PASS    U06  PUT with an invalid value
+PASS    U07  PUT on an unknown id
+PASS    U08  Other records untouched
+PASS    U09  id inside the body is ignored
+PASS    U10  Uniqueness on PUT
+-- Update (PATCH) --
+PASS    P01  PATCH one field
+PASS    P02  Only that field changed
+PASS    P03  PATCH several fields
+PASS    P04  PATCH with empty body {}
+PASS    P05  PATCH with an invalid enum value
+PASS    P06  PATCH with a wrong type
+PASS    P07  PATCH on an unknown id
+PASS    P08  Unknown fields ignored
+PASS    P09  PATCH cannot change id
+PASS    P10  Uniqueness / persistence
+-- Delete (DELETE) --
+PASS    D01  DELETE an existing record
+PASS    D02  204 response has an empty body
+PASS    D03  GET after DELETE
+PASS    D04  DELETE the same id again
+PASS    D05  DELETE an unknown id
+PASS    D06  List total after DELETE
+PASS    D07  Other records unaffected
+PASS    D08  Deleted record absent from the full list
+-- Pagination --
+PASS    G01  limit=5
+PASS    G02  page=2&limit=5
+PASS    G03  Page 1 and page 2
+PASS    G04  Last page
+PASS    G05  totalPages
+PASS    G06  Walk every page (limit=10)
+PASS    G07  page beyond the last page
+PASS    G08  page=0
+PASS    G09  page=-1
+PASS    G10  limit=0
+PASS    G11  limit=51 (maximum is 50)
+PASS    G12  Non-integers
+-- Filter --
+PASS    F01  Filter by one enum value
+PASS    F02  Every enum value
+PASS    F03  flag=true
+PASS    F04  flag=false
+PASS    F05  min<Amount> only
+PASS    F06  max<Amount> only
+PASS    F07  min and max together
+PASS    F08  Filter + pagination
+PASS    F09  Enum + flag combined
+PASS    F10  Invalid filter values
+-- Search --
+PASS    S01  Search a text1 word
+PASS    S02  Case-insensitive
+PASS    S03  Search a text2 word
+PASS    S04  Term that matches nothing
+PASS    S05  total equals the expected count
+PASS    S06  Search + pagination
+PASS    S07  Partial term (first 3 letters)
+PASS    S08  Empty search= value
+-- Sort --
+PASS    O01  sort=<amount> ascending
+PASS    O02  sort=<amount>&order=desc
+PASS    O03  sort=<text1> ascending
+PASS    O04  sort=<count> ascending
+PASS    O05  Invalid sort field (sort=banana)
+PASS    O06  Invalid order (order=sideways)
+-- Combined queries --
+PASS    X01  Search + filter
+PASS    X02  Filter + sort + pagination
+PASS    X03  Search + filter + sort + page together
+PASS    X04  min greater than max
+-- HTTP basics --
+PASS    H01  JSON responses
+PASS    H02  Unknown route (/api/nothing)
+
+Score: 100 / 100  (passed 100, failed 0, blocked 0)
+
+Group                 Passed
+Create (POST)          14 / 14
+Read one (GET /:id)     8 / 8
+List basics (GET)       8 / 8
+Update (PUT)           10 / 10
+Update (PATCH)         10 / 10
+Delete (DELETE)         8 / 8
+Pagination             12 / 12
+Filter                 10 / 10
+Search                  8 / 8
+Sort                    6 / 6
+Combined queries        4 / 4
+HTTP basics             2 / 2
+
+Seed: 1   (repeat with --seed 1)
+startup 0.14s

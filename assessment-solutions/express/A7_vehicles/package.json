@@ -1,0 +1,13 @@
+{
+  "name": "a7-vehicles",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Car Rental API (A7) - Express solution",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}

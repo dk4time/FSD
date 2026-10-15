@@ -1,0 +1,67 @@
+{
+  "setId": "P1",
+  "mode": "practice",
+  "title": "Product Catalog",
+  "resource": "products",
+  "text1": {
+    "name": "name",
+    "minLen": 3,
+    "maxLen": 60,
+    "searchable": true,
+    "sortable": true
+  },
+  "text2": {
+    "name": "brand",
+    "minLen": 2,
+    "maxLen": 40,
+    "searchable": true
+  },
+  "enum": {
+    "name": "category",
+    "values": [
+      "Electronics",
+      "Books",
+      "Clothing",
+      "Home",
+      "Sports"
+    ],
+    "filterable": true
+  },
+  "amount": {
+    "name": "price",
+    "exclusiveMin": 0,
+    "max": 100000,
+    "genMin": 1,
+    "genDecimals": 2,
+    "rangeFilter": [
+      "minPrice",
+      "maxPrice"
+    ],
+    "sortable": true
+  },
+  "count": {
+    "name": "stock",
+    "integer": true,
+    "min": 0,
+    "max": 10000,
+    "sortable": true
+  },
+  "flag": {
+    "name": "inStock",
+    "filterable": true
+  },
+  "uniqueCode": null,
+  "sample": {
+    "name": "Wireless Mouse",
+    "brand": "Logitech",
+    "category": "Electronics",
+    "price": 799.5,
+    "stock": 40,
+    "inStock": true
+  },
+  "sortFields": [
+    "name",
+    "price",
+    "stock"
+  ]
+}

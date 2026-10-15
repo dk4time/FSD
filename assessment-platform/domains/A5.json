@@ -1,0 +1,73 @@
+{
+  "setId": "A5",
+  "mode": "assessment",
+  "title": "Hotel Rooms",
+  "resource": "rooms",
+  "text1": {
+    "name": "name",
+    "minLen": 3,
+    "maxLen": 60,
+    "searchable": true,
+    "sortable": true
+  },
+  "text2": {
+    "name": "location",
+    "minLen": 2,
+    "maxLen": 40,
+    "searchable": true
+  },
+  "enum": {
+    "name": "type",
+    "values": [
+      "Single",
+      "Double",
+      "Suite",
+      "Deluxe",
+      "Family"
+    ],
+    "filterable": true
+  },
+  "amount": {
+    "name": "pricePerNight",
+    "exclusiveMin": 0,
+    "max": 100000,
+    "genMin": 1,
+    "genDecimals": 2,
+    "rangeFilter": [
+      "minPricePerNight",
+      "maxPricePerNight"
+    ],
+    "sortable": true
+  },
+  "count": {
+    "name": "capacity",
+    "integer": true,
+    "min": 1,
+    "max": 10,
+    "sortable": true
+  },
+  "flag": {
+    "name": "available",
+    "filterable": true
+  },
+  "uniqueCode": {
+    "name": "roomNumber",
+    "minLen": 4,
+    "maxLen": 20,
+    "caseInsensitiveUnique": true
+  },
+  "sample": {
+    "name": "Lake View Deluxe",
+    "location": "Ooty",
+    "type": "Deluxe",
+    "pricePerNight": 4500,
+    "capacity": 3,
+    "available": true,
+    "roomNumber": "R-204"
+  },
+  "sortFields": [
+    "name",
+    "pricePerNight",
+    "capacity"
+  ]
+}

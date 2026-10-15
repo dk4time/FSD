@@ -1,0 +1,67 @@
+{
+  "setId": "A6",
+  "mode": "assessment",
+  "title": "Restaurant Menu",
+  "resource": "dishes",
+  "text1": {
+    "name": "dishName",
+    "minLen": 3,
+    "maxLen": 60,
+    "searchable": true,
+    "sortable": true
+  },
+  "text2": {
+    "name": "restaurant",
+    "minLen": 2,
+    "maxLen": 40,
+    "searchable": true
+  },
+  "enum": {
+    "name": "category",
+    "values": [
+      "Starter",
+      "MainCourse",
+      "Dessert",
+      "Beverage",
+      "Snack"
+    ],
+    "filterable": true
+  },
+  "amount": {
+    "name": "price",
+    "exclusiveMin": 0,
+    "max": 5000,
+    "genMin": 1,
+    "genDecimals": 2,
+    "rangeFilter": [
+      "minPrice",
+      "maxPrice"
+    ],
+    "sortable": true
+  },
+  "count": {
+    "name": "calories",
+    "integer": true,
+    "min": 0,
+    "max": 5000,
+    "sortable": true
+  },
+  "flag": {
+    "name": "isVegetarian",
+    "filterable": true
+  },
+  "uniqueCode": null,
+  "sample": {
+    "dishName": "Paneer Tikka",
+    "restaurant": "Spice Garden",
+    "category": "Starter",
+    "price": 220,
+    "calories": 320,
+    "isVegetarian": true
+  },
+  "sortFields": [
+    "dishName",
+    "price",
+    "calories"
+  ]
+}

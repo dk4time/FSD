@@ -1,0 +1,3021 @@
+{
+  "info": {
+    "name": "A7 · Car Rental API",
+    "description": "Self-test for set A7 (/api/vehicles).\n\n1. Start your server on port 8080 with NO data (restart it).\n2. Run the whole collection in order with the Collection Runner.\n3. Restart the server before every full run.\n\nChange the collection variable baseUrl if your server uses another port. These requests check the same rules as the question paper; the real evaluator uses different, random data.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "id",
+      "value": ""
+    },
+    {
+      "key": "id2",
+      "value": ""
+    },
+    {
+      "key": "tempId",
+      "value": ""
+    },
+    {
+      "key": "snapshot",
+      "value": ""
+    },
+    {
+      "key": "patchFlag",
+      "value": ""
+    },
+    {
+      "key": "totalBefore",
+      "value": ""
+    },
+    {
+      "key": "listTotal",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "01 Create (POST)",
+      "item": [
+        {
+          "name": "Valid create (text padded with spaces)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 201', () => pm.response.to.have.status(201));",
+                  "const b = pm.response.json();",
+                  "pm.test('has an id', () => pm.expect(b.id).to.exist);",
+                  "pm.test('every field echoed, text trimmed', () => { const s = {\"model\":\"Swift\",\"brand\":\"Maruti\",\"type\":\"Hatchback\",\"rentPerDay\":1800,\"seats\":5,\"available\":true,\"registrationNumber\":\"TN09AB1234\"}; Object.keys(s).forEach(k => pm.expect(b[k], k).to.eql(s[k])); });",
+                  "pm.collectionVariables.set('id', String(b.id));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/vehicles",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"model\": \"  Swift  \",\n  \"brand\": \"Maruti\",\n  \"type\": \"Hatchback\",\n  \"rentPerDay\": 1800,\n  \"seats\": 5,\n  \"available\": true,\n  \"registrationNumber\": \"TN09AB1234\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Second create gets a different id",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 201', () => pm.response.to.have.status(201));",
+                  "const b = pm.response.json();",
+                  "pm.test('different id', () => pm.expect(String(b.id)).to.not.eql(pm.collectionVariables.get('id')));",
+                  "pm.collectionVariables.set('id2', String(b.id));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/vehicles",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"model\": \"Second Record\",\n  \"brand\": \"Maruti\",\n  \"type\": \"Hatchback\",\n  \"rentPerDay\": 1800,\n  \"seats\": 5,\n  \"available\": true,\n  \"registrationNumber\": \"SECOND-01\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Missing model → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 400', () => pm.response.to.have.status(400));",
+                  "pm.test('JSON body with an error/message string', () => { const b = pm.response.json(); pm.expect(typeof (b.error !== undefined ? b.error : b.message)).to.eql('string'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/vehicles",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"brand\": \"Maruti\",\n  \"type\": \"Hatchback\",\n  \"rentPerDay\": 1800,\n  \"seats\": 5,\n  \"available\": true,\n  \"registrationNumber\": \"BAD-CODE-2\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Missing rentPerDay → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 400', () => pm.response.to.have.status(400));",
+                  "pm.test('JSON body with an error/message string', () => { const b = pm.response.json(); pm.expect(typeof (b.error !== undefined ? b.error : b.message)).to.eql('string'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/vehicles",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"model\": \"Swift\",\n  \"brand\": \"Maruti\",\n  \"type\": \"Hatchback\",\n  \"seats\": 5,\n  \"available\": true,\n  \"registrationNumber\": \"BAD-CODE-2\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "rentPerDay = 0 → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 400', () => pm.response.to.have.status(400));",
+                  "pm.test('JSON body with an error/message string', () => { const b = pm.response.json(); pm.expect(typeof (b.error !== undefined ? b.error : b.message)).to.eql('string'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/vehicles",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"model\": \"Swift\",\n  \"brand\": \"Maruti\",\n  \"type\": \"Hatchback\",\n  \"rentPerDay\": 0,\n  \"seats\": 5,\n  \"available\": true,\n  \"registrationNumber\": \"BAD-CODE-1\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "rentPerDay negative → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 400', () => pm.response.to.have.status(400));",
+                  "pm.test('JSON body with an error/message string', () => { const b = pm.response.json(); pm.expect(typeof (b.error !== undefined ? b.error : b.message)).to.eql('string'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/vehicles",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"model\": \"Swift\",\n  \"brand\": \"Maruti\",\n  \"type\": \"Hatchback\",\n  \"rentPerDay\": -5,\n  \"seats\": 5,\n  \"available\": true,\n  \"registrationNumber\": \"BAD-CODE-1\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "rentPerDay above 50000 → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 400', () => pm.response.to.have.status(400));",
+                  "pm.test('JSON body with an error/message string', () => { const b = pm.response.json(); pm.expect(typeof (b.error !== undefined ? b.error : b.message)).to.eql('string'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/vehicles",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"model\": \"Swift\",\n  \"brand\": \"Maruti\",\n  \"type\": \"Hatchback\",\n  \"rentPerDay\": 50001,\n  \"seats\": 5,\n  \"available\": true,\n  \"registrationNumber\": \"BAD-CODE-1\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "rentPerDay sent as text → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 400', () => pm.response.to.have.status(400));",
+                  "pm.test('JSON body with an error/message string', () => { const b = pm.response.json(); pm.expect(typeof (b.error !== undefined ? b.error : b.message)).to.eql('string'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/vehicles",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"model\": \"Swift\",\n  \"brand\": \"Maruti\",\n  \"type\": \"Hatchback\",\n  \"rentPerDay\": \"1800\",\n  \"seats\": 5,\n  \"available\": true,\n  \"registrationNumber\": \"BAD-CODE-1\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "seats = 1.5 (not whole) → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 400', () => pm.response.to.have.status(400));",
+                  "pm.test('JSON body with an error/message string', () => { const b = pm.response.json(); pm.expect(typeof (b.error !== undefined ? b.error : b.message)).to.eql('string'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/vehicles",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"model\": \"Swift\",\n  \"brand\": \"Maruti\",\n  \"type\": \"Hatchback\",\n  \"rentPerDay\": 1800,\n  \"seats\": 1.5,\n  \"available\": true,\n  \"registrationNumber\": \"BAD-CODE-1\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "seats above 60 → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 400', () => pm.response.to.have.status(400));",
+                  "pm.test('JSON body with an error/message string', () => { const b = pm.response.json(); pm.expect(typeof (b.error !== undefined ? b.error : b.message)).to.eql('string'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/vehicles",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"model\": \"Swift\",\n  \"brand\": \"Maruti\",\n  \"type\": \"Hatchback\",\n  \"rentPerDay\": 1800,\n  \"seats\": 61,\n  \"available\": true,\n  \"registrationNumber\": \"BAD-CODE-1\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "available = \"yes\" → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 400', () => pm.response.to.have.status(400));",
+                  "pm.test('JSON body with an error/message string', () => { const b = pm.response.json(); pm.expect(typeof (b.error !== undefined ? b.error : b.message)).to.eql('string'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/vehicles",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"model\": \"Swift\",\n  \"brand\": \"Maruti\",\n  \"type\": \"Hatchback\",\n  \"rentPerDay\": 1800,\n  \"seats\": 5,\n  \"available\": \"yes\",\n  \"registrationNumber\": \"BAD-CODE-1\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "available = \"true\" (text) → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 400', () => pm.response.to.have.status(400));",
+                  "pm.test('JSON body with an error/message string', () => { const b = pm.response.json(); pm.expect(typeof (b.error !== undefined ? b.error : b.message)).to.eql('string'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/vehicles",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"model\": \"Swift\",\n  \"brand\": \"Maruti\",\n  \"type\": \"Hatchback\",\n  \"rentPerDay\": 1800,\n  \"seats\": 5,\n  \"available\": \"true\",\n  \"registrationNumber\": \"BAD-CODE-1\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "type = \"Banana\" → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 400', () => pm.response.to.have.status(400));",
+                  "pm.test('JSON body with an error/message string', () => { const b = pm.response.json(); pm.expect(typeof (b.error !== undefined ? b.error : b.message)).to.eql('string'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/vehicles",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"model\": \"Swift\",\n  \"brand\": \"Maruti\",\n  \"type\": \"Banana\",\n  \"rentPerDay\": 1800,\n  \"seats\": 5,\n  \"available\": true,\n  \"registrationNumber\": \"BAD-CODE-1\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "type wrong letter case → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 400', () => pm.response.to.have.status(400));",
+                  "pm.test('JSON body with an error/message string', () => { const b = pm.response.json(); pm.expect(typeof (b.error !== undefined ? b.error : b.message)).to.eql('string'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/vehicles",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"model\": \"Swift\",\n  \"brand\": \"Maruti\",\n  \"type\": \"hatchback\",\n  \"rentPerDay\": 1800,\n  \"seats\": 5,\n  \"available\": true,\n  \"registrationNumber\": \"BAD-CODE-1\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "model too short → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 400', () => pm.response.to.have.status(400));",
+                  "pm.test('JSON body with an error/message string', () => { const b = pm.response.json(); pm.expect(typeof (b.error !== undefined ? b.error : b.message)).to.eql('string'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/vehicles",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"model\": \"ab\",\n  \"brand\": \"Maruti\",\n  \"type\": \"Hatchback\",\n  \"rentPerDay\": 1800,\n  \"seats\": 5,\n  \"available\": true,\n  \"registrationNumber\": \"BAD-CODE-1\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "model blank after trim → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 400', () => pm.response.to.have.status(400));",
+                  "pm.test('JSON body with an error/message string', () => { const b = pm.response.json(); pm.expect(typeof (b.error !== undefined ? b.error : b.message)).to.eql('string'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/vehicles",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"model\": \"    \",\n  \"brand\": \"Maruti\",\n  \"type\": \"Hatchback\",\n  \"rentPerDay\": 1800,\n  \"seats\": 5,\n  \"available\": true,\n  \"registrationNumber\": \"BAD-CODE-1\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "brand as a number → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 400', () => pm.response.to.have.status(400));",
+                  "pm.test('JSON body with an error/message string', () => { const b = pm.response.json(); pm.expect(typeof (b.error !== undefined ? b.error : b.message)).to.eql('string'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/vehicles",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"model\": \"Swift\",\n  \"brand\": 12345,\n  \"type\": \"Hatchback\",\n  \"rentPerDay\": 1800,\n  \"seats\": 5,\n  \"available\": true,\n  \"registrationNumber\": \"BAD-CODE-1\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Empty object {} → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 400', () => pm.response.to.have.status(400));",
+                  "pm.test('JSON body with an error/message string', () => { const b = pm.response.json(); pm.expect(typeof (b.error !== undefined ? b.error : b.message)).to.eql('string'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/vehicles",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Malformed JSON → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 400', () => pm.response.to.have.status(400));",
+                  "pm.test('JSON body with an error/message string', () => { const b = pm.response.json(); pm.expect(typeof (b.error !== undefined ? b.error : b.message)).to.eql('string'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/vehicles",
+            "body": {
+              "mode": "raw",
+              "raw": "{",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Server still running after malformed JSON",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/vehicles"
+          }
+        },
+        {
+          "name": "id in body is ignored",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 201', () => pm.response.to.have.status(201));",
+                  "pm.test('server chose the id', () => pm.expect(String(pm.response.json().id)).to.not.eql('99999'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/vehicles",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"model\": \"Id Ignored Record\",\n  \"brand\": \"Maruti\",\n  \"type\": \"Hatchback\",\n  \"rentPerDay\": 1800,\n  \"seats\": 5,\n  \"available\": true,\n  \"registrationNumber\": \"IDIGNORE-1\",\n  \"id\": 99999\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Unknown field is not stored",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 201', () => pm.response.to.have.status(201));",
+                  "pm.test('colour not returned', () => pm.expect(pm.response.json()).to.not.have.property('colour'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/vehicles",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"model\": \"Unknown Field Record\",\n  \"brand\": \"Maruti\",\n  \"type\": \"Hatchback\",\n  \"rentPerDay\": 1800,\n  \"seats\": 5,\n  \"available\": true,\n  \"registrationNumber\": \"UNKNOWN-1\",\n  \"colour\": \"red\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Duplicate registrationNumber (different case) → 409",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 409', () => pm.response.to.have.status(409));",
+                  "pm.test('JSON body with an error/message string', () => { const b = pm.response.json(); pm.expect(typeof (b.error !== undefined ? b.error : b.message)).to.eql('string'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/vehicles",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"model\": \"Duplicate Record\",\n  \"brand\": \"Maruti\",\n  \"type\": \"Hatchback\",\n  \"rentPerDay\": 1800,\n  \"seats\": 5,\n  \"available\": true,\n  \"registrationNumber\": \"tn09ab1234\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "registrationNumber too short → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 400', () => pm.response.to.have.status(400));",
+                  "pm.test('JSON body with an error/message string', () => { const b = pm.response.json(); pm.expect(typeof (b.error !== undefined ? b.error : b.message)).to.eql('string'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/vehicles",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"model\": \"Swift\",\n  \"brand\": \"Maruti\",\n  \"type\": \"Hatchback\",\n  \"rentPerDay\": 1800,\n  \"seats\": 5,\n  \"available\": true,\n  \"registrationNumber\": \"ab\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 Read one (GET /:id)",
+      "item": [
+        {
+          "name": "GET the first record",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test('id matches', () => pm.expect(String(b.id)).to.eql(pm.collectionVariables.get('id')));",
+                  "pm.test('values equal what was stored', () => { const s = {\"model\":\"Swift\",\"brand\":\"Maruti\",\"type\":\"Hatchback\",\"rentPerDay\":1800,\"seats\":5,\"available\":true,\"registrationNumber\":\"TN09AB1234\"}; Object.keys(s).forEach(k => pm.expect(b[k], k).to.eql(s[k])); });",
+                  "pm.test('Content-Type is JSON', () => pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/vehicles/{{id}}"
+          }
+        },
+        {
+          "name": "Unknown numeric id → 404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 404', () => pm.response.to.have.status(404));",
+                  "pm.test('JSON body with an error/message string', () => { const b = pm.response.json(); pm.expect(typeof (b.error !== undefined ? b.error : b.message)).to.eql('string'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/vehicles/987654"
+          }
+        },
+        {
+          "name": "Id that does not look like an id → 404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 404', () => pm.response.to.have.status(404));",
+                  "pm.test('JSON body with an error/message string', () => { const b = pm.response.json(); pm.expect(typeof (b.error !== undefined ? b.error : b.message)).to.eql('string'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/vehicles/abc-not-an-id"
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 List basics (GET)",
+      "item": [
+        {
+          "name": "GET list (no params)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('list shape: data, page, limit, total, totalPages', () => { const b = pm.response.json(); pm.expect(b.data).to.be.an('array'); ['page','limit','total','totalPages'].forEach(k => pm.expect(b[k], k).to.be.a('number')); });",
+                  "const b = pm.response.json();",
+                  "pm.test('defaults page 1, limit 10', () => { pm.expect(b.page).to.eql(1); pm.expect(b.limit).to.eql(10); });",
+                  "pm.test('at most 10 items', () => pm.expect(b.data.length).to.be.at.most(10));",
+                  "pm.test('totalPages = ceil(total / limit)', () => pm.expect(b.totalPages).to.eql(b.total === 0 ? 0 : Math.ceil(b.total / b.limit)));",
+                  "pm.test('creation order: first item is the first record', () => pm.expect(String(b.data[0].id)).to.eql(pm.collectionVariables.get('id')));",
+                  "pm.test('every item has id and all fields', () => b.data.forEach(r => ['id', ...[\"model\",\"brand\",\"type\",\"rentPerDay\",\"seats\",\"available\",\"registrationNumber\"]].forEach(k => pm.expect(r, k).to.have.property(k))));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/vehicles"
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 Update (PUT)",
+      "item": [
+        {
+          "name": "PUT full record",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test('same id', () => pm.expect(String(b.id)).to.eql(pm.collectionVariables.get('id')));",
+                  "pm.test('new values returned', () => { const s = {\"model\":\"Updated Record Name\",\"brand\":\"Updated Maker\",\"type\":\"Sedan\",\"rentPerDay\":16666.67,\"seats\":60,\"available\":false,\"registrationNumber\":\"PUT-CODE-1\"}; Object.keys(s).forEach(k => pm.expect(b[k], k).to.eql(s[k])); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/vehicles/{{id}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"model\": \"Updated Record Name\",\n  \"brand\": \"Updated Maker\",\n  \"type\": \"Sedan\",\n  \"rentPerDay\": 16666.67,\n  \"seats\": 60,\n  \"available\": false,\n  \"registrationNumber\": \"PUT-CODE-1\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "GET after PUT shows new values (saves a snapshot for PATCH)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test('new values stored', () => { const s = {\"model\":\"Updated Record Name\",\"brand\":\"Updated Maker\",\"type\":\"Sedan\",\"rentPerDay\":16666.67,\"seats\":60,\"available\":false,\"registrationNumber\":\"PUT-CODE-1\"}; Object.keys(s).forEach(k => pm.expect(b[k], k).to.eql(s[k])); });",
+                  "pm.collectionVariables.set('snapshot', JSON.stringify(b));",
+                  "pm.collectionVariables.set('patchFlag', String(!b[\"available\"]));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/vehicles/{{id}}"
+          }
+        },
+        {
+          "name": "PUT missing brand → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 400', () => pm.response.to.have.status(400));",
+                  "pm.test('JSON body with an error/message string', () => { const b = pm.response.json(); pm.expect(typeof (b.error !== undefined ? b.error : b.message)).to.eql('string'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/vehicles/{{id}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"model\": \"Updated Record Name\",\n  \"type\": \"Sedan\",\n  \"rentPerDay\": 16666.67,\n  \"seats\": 60,\n  \"available\": false,\n  \"registrationNumber\": \"PUT-CODE-1\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "PUT invalid type → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 400', () => pm.response.to.have.status(400));",
+                  "pm.test('JSON body with an error/message string', () => { const b = pm.response.json(); pm.expect(typeof (b.error !== undefined ? b.error : b.message)).to.eql('string'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/vehicles/{{id}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"model\": \"Updated Record Name\",\n  \"brand\": \"Updated Maker\",\n  \"type\": \"Banana\",\n  \"rentPerDay\": 16666.67,\n  \"seats\": 60,\n  \"available\": false,\n  \"registrationNumber\": \"PUT-CODE-1\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "PUT unknown id → 404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 404', () => pm.response.to.have.status(404));",
+                  "pm.test('JSON body with an error/message string', () => { const b = pm.response.json(); pm.expect(typeof (b.error !== undefined ? b.error : b.message)).to.eql('string'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/vehicles/987654",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"model\": \"Updated Record Name\",\n  \"brand\": \"Updated Maker\",\n  \"type\": \"Sedan\",\n  \"rentPerDay\": 16666.67,\n  \"seats\": 60,\n  \"available\": false,\n  \"registrationNumber\": \"PUT-NEW-9\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "PUT did not create a record",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 404', () => pm.response.to.have.status(404));",
+                  "pm.test('JSON body with an error/message string', () => { const b = pm.response.json(); pm.expect(typeof (b.error !== undefined ? b.error : b.message)).to.eql('string'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/vehicles/987654"
+          }
+        },
+        {
+          "name": "PUT with id in body: id unchanged",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('id unchanged', () => pm.expect(String(pm.response.json().id)).to.eql(pm.collectionVariables.get('id')));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/vehicles/{{id}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"model\": \"Updated Record Name\",\n  \"brand\": \"Updated Maker\",\n  \"type\": \"Sedan\",\n  \"rentPerDay\": 16666.67,\n  \"seats\": 60,\n  \"available\": false,\n  \"registrationNumber\": \"PUT-CODE-1\",\n  \"id\": 5555\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Other record untouched by PUT",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('second record unchanged', () => pm.expect(pm.response.json()[\"model\"]).to.eql('Second Record'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/vehicles/{{id2}}"
+          }
+        },
+        {
+          "name": "PUT registrationNumber already used by another record → 409",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 409', () => pm.response.to.have.status(409));",
+                  "pm.test('JSON body with an error/message string', () => { const b = pm.response.json(); pm.expect(typeof (b.error !== undefined ? b.error : b.message)).to.eql('string'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/vehicles/{{id2}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"model\": \"Second Record\",\n  \"brand\": \"Updated Maker\",\n  \"type\": \"Sedan\",\n  \"rentPerDay\": 16666.67,\n  \"seats\": 60,\n  \"available\": false,\n  \"registrationNumber\": \"put-code-1\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 Update (PATCH)",
+      "item": [
+        {
+          "name": "PATCH only available",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json(); const snap = JSON.parse(pm.collectionVariables.get('snapshot'));",
+                  "pm.test('available changed', () => pm.expect(b[\"available\"]).to.eql(!snap[\"available\"]));",
+                  "pm.test('every other field unchanged', () => Object.keys(snap).filter(k => k !== \"available\").forEach(k => pm.expect(b[k], k).to.eql(snap[k])));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/vehicles/{{id}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"available\": {{patchFlag}} }",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "PATCH several fields",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test('both fields changed', () => { pm.expect(b[\"brand\"]).to.eql('Patched Maker'); pm.expect(b[\"seats\"]).to.eql(1); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/vehicles/{{id}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"brand\": \"Patched Maker\",\n  \"seats\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "PATCH {} → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 400', () => pm.response.to.have.status(400));",
+                  "pm.test('JSON body with an error/message string', () => { const b = pm.response.json(); pm.expect(typeof (b.error !== undefined ? b.error : b.message)).to.eql('string'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/vehicles/{{id}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "PATCH invalid type → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 400', () => pm.response.to.have.status(400));",
+                  "pm.test('JSON body with an error/message string', () => { const b = pm.response.json(); pm.expect(typeof (b.error !== undefined ? b.error : b.message)).to.eql('string'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/vehicles/{{id}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"Banana\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "PATCH rentPerDay as text → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 400', () => pm.response.to.have.status(400));",
+                  "pm.test('JSON body with an error/message string', () => { const b = pm.response.json(); pm.expect(typeof (b.error !== undefined ? b.error : b.message)).to.eql('string'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/vehicles/{{id}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rentPerDay\": \"100\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "PATCH unknown id → 404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 404', () => pm.response.to.have.status(404));",
+                  "pm.test('JSON body with an error/message string', () => { const b = pm.response.json(); pm.expect(typeof (b.error !== undefined ? b.error : b.message)).to.eql('string'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/vehicles/987654",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"brand\": \"Nobody\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "PATCH unknown field is ignored",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('colour not returned', () => pm.expect(pm.response.json()).to.not.have.property('colour'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/vehicles/{{id}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"brand\": \"Patched Again\",\n  \"colour\": \"red\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "PATCH cannot change id",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('id unchanged', () => pm.expect(String(pm.response.json().id)).to.eql(pm.collectionVariables.get('id')));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/vehicles/{{id}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": 777,\n  \"brand\": \"Patched Third\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "PATCH is saved",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('brand is the last patched value', () => pm.expect(pm.response.json()[\"brand\"]).to.eql('Patched Third'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/vehicles/{{id}}"
+          }
+        },
+        {
+          "name": "PATCH registrationNumber already used by another record → 409",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 409', () => pm.response.to.have.status(409));",
+                  "pm.test('JSON body with an error/message string', () => { const b = pm.response.json(); pm.expect(typeof (b.error !== undefined ? b.error : b.message)).to.eql('string'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/vehicles/{{id2}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"registrationNumber\": \"put-code-1\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 Delete (DELETE)",
+      "item": [
+        {
+          "name": "Create a record to delete",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 201', () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set('tempId', String(pm.response.json().id));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/vehicles",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"model\": \"To Be Deleted\",\n  \"brand\": \"Maruti\",\n  \"type\": \"Hatchback\",\n  \"rentPerDay\": 1800,\n  \"seats\": 5,\n  \"available\": true,\n  \"registrationNumber\": \"DELETE-ME-1\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Total before delete",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', () => pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set('totalBefore', String(pm.response.json().total));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/vehicles"
+          }
+        },
+        {
+          "name": "DELETE → 204 with empty body",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 204', () => pm.response.to.have.status(204));",
+                  "pm.test('empty body', () => pm.expect(pm.response.text()).to.eql(''));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/api/vehicles/{{tempId}}"
+          }
+        },
+        {
+          "name": "GET deleted record → 404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 404', () => pm.response.to.have.status(404));",
+                  "pm.test('JSON body with an error/message string', () => { const b = pm.response.json(); pm.expect(typeof (b.error !== undefined ? b.error : b.message)).to.eql('string'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/vehicles/{{tempId}}"
+          }
+        },
+        {
+          "name": "DELETE again → 404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 404', () => pm.response.to.have.status(404));",
+                  "pm.test('JSON body with an error/message string', () => { const b = pm.response.json(); pm.expect(typeof (b.error !== undefined ? b.error : b.message)).to.eql('string'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/api/vehicles/{{tempId}}"
+          }
+        },
+        {
+          "name": "DELETE unknown id → 404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 404', () => pm.response.to.have.status(404));",
+                  "pm.test('JSON body with an error/message string', () => { const b = pm.response.json(); pm.expect(typeof (b.error !== undefined ? b.error : b.message)).to.eql('string'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/api/vehicles/987654"
+          }
+        },
+        {
+          "name": "Total dropped by exactly one",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('total - 1', () => pm.expect(pm.response.json().total).to.eql(Number(pm.collectionVariables.get('totalBefore')) - 1));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/vehicles"
+          }
+        },
+        {
+          "name": "Other record still there",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/vehicles/{{id2}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "07 Pagination (creates 12 seed records first)",
+      "item": [
+        {
+          "name": "Seed 01: delta Zqx",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 201', () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/vehicles",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"model\": \"delta Zqx\",\n  \"brand\": \"Plain Maker\",\n  \"type\": \"Hatchback\",\n  \"rentPerDay\": 3571.43,\n  \"seats\": 1,\n  \"available\": false,\n  \"registrationNumber\": \"ZQX-A7-01\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Seed 02: Alpha Zqx",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 201', () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/vehicles",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"model\": \"Alpha Zqx\",\n  \"brand\": \"Plain Maker\",\n  \"type\": \"Sedan\",\n  \"rentPerDay\": 7142.86,\n  \"seats\": 6,\n  \"available\": true,\n  \"registrationNumber\": \"ZQX-A7-02\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Seed 03: echo Zqx",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 201', () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/vehicles",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"model\": \"echo Zqx\",\n  \"brand\": \"Plain Maker\",\n  \"type\": \"SUV\",\n  \"rentPerDay\": 10714.29,\n  \"seats\": 11,\n  \"available\": true,\n  \"registrationNumber\": \"ZQX-A7-03\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Seed 04: Bravo Zqx",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 201', () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/vehicles",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"model\": \"Bravo Zqx\",\n  \"brand\": \"Plain Maker\",\n  \"type\": \"Van\",\n  \"rentPerDay\": 14285.71,\n  \"seats\": 16,\n  \"available\": false,\n  \"registrationNumber\": \"ZQX-A7-04\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Seed 05: foxtrot Zqx",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 201', () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/vehicles",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"model\": \"foxtrot Zqx\",\n  \"brand\": \"Kwv Maker\",\n  \"type\": \"Bike\",\n  \"rentPerDay\": 17857.14,\n  \"seats\": 21,\n  \"available\": true,\n  \"registrationNumber\": \"ZQX-A7-05\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Seed 06: Charlie Zqx",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 201', () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/vehicles",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"model\": \"Charlie Zqx\",\n  \"brand\": \"Plain Maker\",\n  \"type\": \"Hatchback\",\n  \"rentPerDay\": 21428.57,\n  \"seats\": 26,\n  \"available\": true,\n  \"registrationNumber\": \"ZQX-A7-06\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Seed 07: hotel Zqx",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 201', () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/vehicles",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"model\": \"hotel Zqx\",\n  \"brand\": \"Plain Maker\",\n  \"type\": \"Sedan\",\n  \"rentPerDay\": 25000,\n  \"seats\": 31,\n  \"available\": false,\n  \"registrationNumber\": \"ZQX-A7-07\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Seed 08: Golf Zqx",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 201', () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/vehicles",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"model\": \"Golf Zqx\",\n  \"brand\": \"Plain Maker\",\n  \"type\": \"SUV\",\n  \"rentPerDay\": 28571.43,\n  \"seats\": 36,\n  \"available\": true,\n  \"registrationNumber\": \"ZQX-A7-08\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Seed 09: juliet Zqx",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 201', () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/vehicles",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"model\": \"juliet Zqx\",\n  \"brand\": \"Plain Maker\",\n  \"type\": \"Van\",\n  \"rentPerDay\": 32142.86,\n  \"seats\": 41,\n  \"available\": true,\n  \"registrationNumber\": \"ZQX-A7-09\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Seed 10: India Zqx",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 201', () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/vehicles",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"model\": \"India Zqx\",\n  \"brand\": \"Plain Maker\",\n  \"type\": \"Bike\",\n  \"rentPerDay\": 35714.29,\n  \"seats\": 46,\n  \"available\": false,\n  \"registrationNumber\": \"ZQX-A7-10\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Seed 11: lima Zqx",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 201', () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/vehicles",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"model\": \"lima Zqx\",\n  \"brand\": \"Plain Maker\",\n  \"type\": \"Hatchback\",\n  \"rentPerDay\": 39285.71,\n  \"seats\": 51,\n  \"available\": true,\n  \"registrationNumber\": \"ZQX-A7-11\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Seed 12: Kilo Zqx",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 201', () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/vehicles",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"model\": \"Kilo Zqx\",\n  \"brand\": \"Plain Maker\",\n  \"type\": \"Sedan\",\n  \"rentPerDay\": 42857.14,\n  \"seats\": 5,\n  \"available\": true,\n  \"registrationNumber\": \"ZQX-A7-12\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "search=zqx page=1 limit=5",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('list shape: data, page, limit, total, totalPages', () => { const b = pm.response.json(); pm.expect(b.data).to.be.an('array'); ['page','limit','total','totalPages'].forEach(k => pm.expect(b[k], k).to.be.a('number')); });",
+                  "const b = pm.response.json();",
+                  "pm.test('total 12, totalPages 3', () => { pm.expect(b.total).to.eql(12); pm.expect(b.totalPages).to.eql(3); });",
+                  "pm.test('page 1, limit 5', () => { pm.expect(b.page).to.eql(1); pm.expect(b.limit).to.eql(5); });",
+                  "pm.test('exact items in creation order', () => pm.expect(pm.response.json().data.map(r => r[\"model\"])).to.eql([\"delta Zqx\",\"Alpha Zqx\",\"echo Zqx\",\"Bravo Zqx\",\"foxtrot Zqx\"]));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/vehicles?search=zqx&page=1&limit=5"
+          }
+        },
+        {
+          "name": "search=zqx page=2 limit=5",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('list shape: data, page, limit, total, totalPages', () => { const b = pm.response.json(); pm.expect(b.data).to.be.an('array'); ['page','limit','total','totalPages'].forEach(k => pm.expect(b[k], k).to.be.a('number')); });",
+                  "const b = pm.response.json();",
+                  "pm.test('total 12, totalPages 3', () => { pm.expect(b.total).to.eql(12); pm.expect(b.totalPages).to.eql(3); });",
+                  "pm.test('page 2, limit 5', () => { pm.expect(b.page).to.eql(2); pm.expect(b.limit).to.eql(5); });",
+                  "pm.test('exact items in creation order', () => pm.expect(pm.response.json().data.map(r => r[\"model\"])).to.eql([\"Charlie Zqx\",\"hotel Zqx\",\"Golf Zqx\",\"juliet Zqx\",\"India Zqx\"]));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/vehicles?search=zqx&page=2&limit=5"
+          }
+        },
+        {
+          "name": "search=zqx page=3 limit=5",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('list shape: data, page, limit, total, totalPages', () => { const b = pm.response.json(); pm.expect(b.data).to.be.an('array'); ['page','limit','total','totalPages'].forEach(k => pm.expect(b[k], k).to.be.a('number')); });",
+                  "const b = pm.response.json();",
+                  "pm.test('total 12, totalPages 3', () => { pm.expect(b.total).to.eql(12); pm.expect(b.totalPages).to.eql(3); });",
+                  "pm.test('page 3, limit 5', () => { pm.expect(b.page).to.eql(3); pm.expect(b.limit).to.eql(5); });",
+                  "pm.test('exact items in creation order', () => pm.expect(pm.response.json().data.map(r => r[\"model\"])).to.eql([\"lima Zqx\",\"Kilo Zqx\"]));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/vehicles?search=zqx&page=3&limit=5"
+          }
+        },
+        {
+          "name": "search=zqx page=4 limit=5",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('list shape: data, page, limit, total, totalPages', () => { const b = pm.response.json(); pm.expect(b.data).to.be.an('array'); ['page','limit','total','totalPages'].forEach(k => pm.expect(b[k], k).to.be.a('number')); });",
+                  "const b = pm.response.json();",
+                  "pm.test('total 12, totalPages 3', () => { pm.expect(b.total).to.eql(12); pm.expect(b.totalPages).to.eql(3); });",
+                  "pm.test('page 4, limit 5', () => { pm.expect(b.page).to.eql(4); pm.expect(b.limit).to.eql(5); });",
+                  "pm.test('exact items in creation order', () => pm.expect(pm.response.json().data.map(r => r[\"model\"])).to.eql([]));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/vehicles?search=zqx&page=4&limit=5"
+          }
+        },
+        {
+          "name": "search=zqx default limit → 10 items",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('10 items, total 12, totalPages 2', () => { const b = pm.response.json(); pm.expect(b.data.length).to.eql(10); pm.expect(b.total).to.eql(12); pm.expect(b.totalPages).to.eql(2); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/vehicles?search=zqx"
+          }
+        },
+        {
+          "name": "limit=50 is allowed",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/vehicles?limit=50"
+          }
+        },
+        {
+          "name": "limit=51 → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 400', () => pm.response.to.have.status(400));",
+                  "pm.test('JSON body with an error/message string', () => { const b = pm.response.json(); pm.expect(typeof (b.error !== undefined ? b.error : b.message)).to.eql('string'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/vehicles?limit=51"
+          }
+        },
+        {
+          "name": "limit=0 → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 400', () => pm.response.to.have.status(400));",
+                  "pm.test('JSON body with an error/message string', () => { const b = pm.response.json(); pm.expect(typeof (b.error !== undefined ? b.error : b.message)).to.eql('string'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/vehicles?limit=0"
+          }
+        },
+        {
+          "name": "limit=-1 → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 400', () => pm.response.to.have.status(400));",
+                  "pm.test('JSON body with an error/message string', () => { const b = pm.response.json(); pm.expect(typeof (b.error !== undefined ? b.error : b.message)).to.eql('string'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/vehicles?limit=-1"
+          }
+        },
+        {
+          "name": "limit=abc → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 400', () => pm.response.to.have.status(400));",
+                  "pm.test('JSON body with an error/message string', () => { const b = pm.response.json(); pm.expect(typeof (b.error !== undefined ? b.error : b.message)).to.eql('string'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/vehicles?limit=abc"
+          }
+        },
+        {
+          "name": "page=0 → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 400', () => pm.response.to.have.status(400));",
+                  "pm.test('JSON body with an error/message string', () => { const b = pm.response.json(); pm.expect(typeof (b.error !== undefined ? b.error : b.message)).to.eql('string'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/vehicles?page=0"
+          }
+        },
+        {
+          "name": "page=-2 → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 400', () => pm.response.to.have.status(400));",
+                  "pm.test('JSON body with an error/message string', () => { const b = pm.response.json(); pm.expect(typeof (b.error !== undefined ? b.error : b.message)).to.eql('string'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/vehicles?page=-2"
+          }
+        },
+        {
+          "name": "page=abc → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 400', () => pm.response.to.have.status(400));",
+                  "pm.test('JSON body with an error/message string', () => { const b = pm.response.json(); pm.expect(typeof (b.error !== undefined ? b.error : b.message)).to.eql('string'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/vehicles?page=abc"
+          }
+        },
+        {
+          "name": "page=1.5 → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 400', () => pm.response.to.have.status(400));",
+                  "pm.test('JSON body with an error/message string', () => { const b = pm.response.json(); pm.expect(typeof (b.error !== undefined ? b.error : b.message)).to.eql('string'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/vehicles?page=1.5"
+          }
+        }
+      ]
+    },
+    {
+      "name": "08 Filter",
+      "item": [
+        {
+          "name": "type=Hatchback",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('total 3', () => { const b = pm.response.json(); pm.expect(b.total).to.eql(3); pm.expect(b.data.length).to.eql(3); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/vehicles?search=zqx&limit=50&type=Hatchback"
+          }
+        },
+        {
+          "name": "available=true",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('total 8', () => { const b = pm.response.json(); pm.expect(b.total).to.eql(8); pm.expect(b.data.length).to.eql(8); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/vehicles?search=zqx&limit=50&available=true"
+          }
+        },
+        {
+          "name": "available=false",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('total 4', () => { const b = pm.response.json(); pm.expect(b.total).to.eql(4); pm.expect(b.data.length).to.eql(4); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/vehicles?search=zqx&limit=50&available=false"
+          }
+        },
+        {
+          "name": "minRentPerDay=14285.71&maxRentPerDay=28571.43 (both ends included)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('total 5', () => { const b = pm.response.json(); pm.expect(b.total).to.eql(5); pm.expect(b.data.length).to.eql(5); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/vehicles?search=zqx&limit=50&minRentPerDay=14285.71&maxRentPerDay=28571.43"
+          }
+        },
+        {
+          "name": "minRentPerDay=32142.86 only",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('total 4', () => { const b = pm.response.json(); pm.expect(b.total).to.eql(4); pm.expect(b.data.length).to.eql(4); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/vehicles?search=zqx&limit=50&minRentPerDay=32142.86"
+          }
+        },
+        {
+          "name": "maxRentPerDay=7142.86 only",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('total 2', () => { const b = pm.response.json(); pm.expect(b.total).to.eql(2); pm.expect(b.data.length).to.eql(2); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/vehicles?search=zqx&limit=50&maxRentPerDay=7142.86"
+          }
+        },
+        {
+          "name": "type=Sedan&available=true (AND)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('total 2', () => { const b = pm.response.json(); pm.expect(b.total).to.eql(2); pm.expect(b.data.length).to.eql(2); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/vehicles?search=zqx&limit=50&type=Sedan&available=true"
+          }
+        },
+        {
+          "name": "type=Hatchback with limit=1 (filter + pagination)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('second match only', () => { const b = pm.response.json(); pm.expect(pm.response.json().data.map(r => r[\"model\"])).to.eql([\"Charlie Zqx\"]); pm.expect(b.total).to.eql(3); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/vehicles?search=zqx&type=Hatchback&limit=1&page=2"
+          }
+        },
+        {
+          "name": "type=Banana → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 400', () => pm.response.to.have.status(400));",
+                  "pm.test('JSON body with an error/message string', () => { const b = pm.response.json(); pm.expect(typeof (b.error !== undefined ? b.error : b.message)).to.eql('string'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/vehicles?type=Banana"
+          }
+        },
+        {
+          "name": "type wrong letter case → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 400', () => pm.response.to.have.status(400));",
+                  "pm.test('JSON body with an error/message string', () => { const b = pm.response.json(); pm.expect(typeof (b.error !== undefined ? b.error : b.message)).to.eql('string'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/vehicles?type=hatchback"
+          }
+        },
+        {
+          "name": "available=maybe → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 400', () => pm.response.to.have.status(400));",
+                  "pm.test('JSON body with an error/message string', () => { const b = pm.response.json(); pm.expect(typeof (b.error !== undefined ? b.error : b.message)).to.eql('string'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/vehicles?available=maybe"
+          }
+        },
+        {
+          "name": "minRentPerDay=abc → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 400', () => pm.response.to.have.status(400));",
+                  "pm.test('JSON body with an error/message string', () => { const b = pm.response.json(); pm.expect(typeof (b.error !== undefined ? b.error : b.message)).to.eql('string'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/vehicles?minRentPerDay=abc"
+          }
+        },
+        {
+          "name": "maxRentPerDay=abc → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 400', () => pm.response.to.have.status(400));",
+                  "pm.test('JSON body with an error/message string', () => { const b = pm.response.json(); pm.expect(typeof (b.error !== undefined ? b.error : b.message)).to.eql('string'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/vehicles?maxRentPerDay=abc"
+          }
+        }
+      ]
+    },
+    {
+      "name": "09 Search",
+      "item": [
+        {
+          "name": "search=ZQX (upper case) finds the same 12",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('total 12', () => { const b = pm.response.json(); pm.expect(b.total).to.eql(12); pm.expect(b.data.length).to.eql(12); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/vehicles?search=ZQX&limit=50"
+          }
+        },
+        {
+          "name": "search=kwv matches brand",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('1 match on brand', () => { const b = pm.response.json(); pm.expect(b.total).to.eql(1); pm.expect(b.data[0][\"model\"]).to.eql(\"foxtrot Zqx\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/vehicles?search=KWV"
+          }
+        },
+        {
+          "name": "search with no match → empty",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('data [], total 0, totalPages 0', () => { const b = pm.response.json(); pm.expect(b.data).to.eql([]); pm.expect(b.total).to.eql(0); pm.expect(b.totalPages).to.eql(0); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/vehicles?search=nomatchxyz"
+          }
+        },
+        {
+          "name": "Total without search",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', () => pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set('listTotal', String(pm.response.json().total));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/vehicles"
+          }
+        },
+        {
+          "name": "Empty search= means no search",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('same total as no search', () => pm.expect(pm.response.json().total).to.eql(Number(pm.collectionVariables.get('listTotal'))));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/vehicles?search="
+          }
+        }
+      ]
+    },
+    {
+      "name": "10 Sort",
+      "item": [
+        {
+          "name": "search=zqx&sort=rentPerDay",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('exact order', () => pm.expect(pm.response.json().data.map(r => r[\"model\"])).to.eql([\"delta Zqx\",\"Alpha Zqx\",\"echo Zqx\",\"Bravo Zqx\",\"foxtrot Zqx\",\"Charlie Zqx\",\"hotel Zqx\",\"Golf Zqx\",\"juliet Zqx\",\"India Zqx\",\"lima Zqx\",\"Kilo Zqx\"]));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/vehicles?search=zqx&limit=50&sort=rentPerDay"
+          }
+        },
+        {
+          "name": "search=zqx&sort=rentPerDay&order=desc",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('exact order', () => pm.expect(pm.response.json().data.map(r => r[\"model\"])).to.eql([\"Kilo Zqx\",\"lima Zqx\",\"India Zqx\",\"juliet Zqx\",\"Golf Zqx\",\"hotel Zqx\",\"Charlie Zqx\",\"foxtrot Zqx\",\"Bravo Zqx\",\"echo Zqx\",\"Alpha Zqx\",\"delta Zqx\"]));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/vehicles?search=zqx&limit=50&sort=rentPerDay&order=desc"
+          }
+        },
+        {
+          "name": "search=zqx&sort=model (ignores letter case)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('exact order', () => pm.expect(pm.response.json().data.map(r => r[\"model\"])).to.eql([\"Alpha Zqx\",\"Bravo Zqx\",\"Charlie Zqx\",\"delta Zqx\",\"echo Zqx\",\"foxtrot Zqx\",\"Golf Zqx\",\"hotel Zqx\",\"India Zqx\",\"juliet Zqx\",\"Kilo Zqx\",\"lima Zqx\"]));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/vehicles?search=zqx&limit=50&sort=model"
+          }
+        },
+        {
+          "name": "search=zqx&sort=seats&order=desc",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('numbers in descending order', () => { const v = pm.response.json().data.map(r => r[\"seats\"]); for (let i = 1; i < v.length; i++) pm.expect(v[i]).to.be.at.most(v[i - 1]); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/vehicles?search=zqx&limit=50&sort=seats&order=desc"
+          }
+        },
+        {
+          "name": "sort=banana → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 400', () => pm.response.to.have.status(400));",
+                  "pm.test('JSON body with an error/message string', () => { const b = pm.response.json(); pm.expect(typeof (b.error !== undefined ? b.error : b.message)).to.eql('string'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/vehicles?sort=banana"
+          }
+        },
+        {
+          "name": "order=sideways → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 400', () => pm.response.to.have.status(400));",
+                  "pm.test('JSON body with an error/message string', () => { const b = pm.response.json(); pm.expect(typeof (b.error !== undefined ? b.error : b.message)).to.eql('string'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/vehicles?sort=rentPerDay&order=sideways"
+          }
+        }
+      ]
+    },
+    {
+      "name": "11 Combined queries",
+      "item": [
+        {
+          "name": "search + filter + sort + page together",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test('exact page', () => pm.expect(pm.response.json().data.map(r => r[\"model\"])).to.eql([\"lima Zqx\"]));",
+                  "pm.test('total 2, totalPages 2', () => { pm.expect(b.total).to.eql(2); pm.expect(b.totalPages).to.eql(2); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/vehicles?search=zqx&type=Hatchback&available=true&sort=rentPerDay&order=desc&page=1&limit=1"
+          }
+        },
+        {
+          "name": "minRentPerDay greater than maxRentPerDay → 200 empty",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('data [], total 0, totalPages 0', () => { const b = pm.response.json(); pm.expect(b.data).to.eql([]); pm.expect(b.total).to.eql(0); pm.expect(b.totalPages).to.eql(0); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/vehicles?minRentPerDay=100&maxRentPerDay=10"
+          }
+        }
+      ]
+    },
+    {
+      "name": "12 HTTP basics",
+      "item": [
+        {
+          "name": "Unknown route → JSON 404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 404', () => pm.response.to.have.status(404));",
+                  "pm.test('JSON body with an error/message string', () => { const b = pm.response.json(); pm.expect(typeof (b.error !== undefined ? b.error : b.message)).to.eql('string'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/nothing"
+          }
+        },
+        {
+          "name": "List is JSON",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Content-Type is JSON', () => pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/vehicles"
+          }
+        }
+      ]
+    }
+  ]
+}

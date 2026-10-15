@@ -1,0 +1,22 @@
+{
+  "name": "assessment-platform",
+  "version": "1.0.0",
+  "private": true,
+  "description": "REST API assessment platform: evaluator engine, trainer CLI, collector, assessment kit, reference servers",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "postinstall": "npm --prefix collector install",
+    "test": "node --test test/*.test.js && npm --prefix collector test",
+    "verify": "node trainer-only/verify.js",
+    "build-kits": "node scripts/build-kits.js",
+    "check-atlas": "node collector/check-atlas.js",
+    "trainer": "node trainer-only/trainer-cli.js",
+    "reference": "node trainer-only/reference/server.js",
+    "collector": "npm --prefix collector start"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}

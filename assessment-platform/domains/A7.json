@@ -1,0 +1,73 @@
+{
+  "setId": "A7",
+  "mode": "assessment",
+  "title": "Car Rental",
+  "resource": "vehicles",
+  "text1": {
+    "name": "model",
+    "minLen": 3,
+    "maxLen": 60,
+    "searchable": true,
+    "sortable": true
+  },
+  "text2": {
+    "name": "brand",
+    "minLen": 2,
+    "maxLen": 40,
+    "searchable": true
+  },
+  "enum": {
+    "name": "type",
+    "values": [
+      "Hatchback",
+      "Sedan",
+      "SUV",
+      "Van",
+      "Bike"
+    ],
+    "filterable": true
+  },
+  "amount": {
+    "name": "rentPerDay",
+    "exclusiveMin": 0,
+    "max": 50000,
+    "genMin": 1,
+    "genDecimals": 2,
+    "rangeFilter": [
+      "minRentPerDay",
+      "maxRentPerDay"
+    ],
+    "sortable": true
+  },
+  "count": {
+    "name": "seats",
+    "integer": true,
+    "min": 1,
+    "max": 60,
+    "sortable": true
+  },
+  "flag": {
+    "name": "available",
+    "filterable": true
+  },
+  "uniqueCode": {
+    "name": "registrationNumber",
+    "minLen": 4,
+    "maxLen": 20,
+    "caseInsensitiveUnique": true
+  },
+  "sample": {
+    "model": "Swift",
+    "brand": "Maruti",
+    "type": "Hatchback",
+    "rentPerDay": 1800,
+    "seats": 5,
+    "available": true,
+    "registrationNumber": "TN09AB1234"
+  },
+  "sortFields": [
+    "model",
+    "rentPerDay",
+    "seats"
+  ]
+}

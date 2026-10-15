@@ -1,0 +1,67 @@
+{
+  "setId": "A8",
+  "mode": "assessment",
+  "title": "Event Tickets",
+  "resource": "events",
+  "text1": {
+    "name": "title",
+    "minLen": 3,
+    "maxLen": 60,
+    "searchable": true,
+    "sortable": true
+  },
+  "text2": {
+    "name": "venue",
+    "minLen": 2,
+    "maxLen": 40,
+    "searchable": true
+  },
+  "enum": {
+    "name": "category",
+    "values": [
+      "Music",
+      "Tech",
+      "Sports",
+      "Workshop",
+      "Festival"
+    ],
+    "filterable": true
+  },
+  "amount": {
+    "name": "ticketPrice",
+    "exclusiveMin": 0,
+    "max": 50000,
+    "genMin": 1,
+    "genDecimals": 2,
+    "rangeFilter": [
+      "minTicketPrice",
+      "maxTicketPrice"
+    ],
+    "sortable": true
+  },
+  "count": {
+    "name": "seatsAvailable",
+    "integer": true,
+    "min": 0,
+    "max": 100000,
+    "sortable": true
+  },
+  "flag": {
+    "name": "isOnline",
+    "filterable": true
+  },
+  "uniqueCode": null,
+  "sample": {
+    "title": "DevFest Chennai",
+    "venue": "Trade Centre",
+    "category": "Tech",
+    "ticketPrice": 499,
+    "seatsAvailable": 250,
+    "isOnline": false
+  },
+  "sortFields": [
+    "title",
+    "ticketPrice",
+    "seatsAvailable"
+  ]
+}

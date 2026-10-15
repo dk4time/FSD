@@ -1,0 +1,73 @@
+{
+  "setId": "P2",
+  "mode": "practice",
+  "title": "Library Books",
+  "resource": "books",
+  "text1": {
+    "name": "title",
+    "minLen": 3,
+    "maxLen": 60,
+    "searchable": true,
+    "sortable": true
+  },
+  "text2": {
+    "name": "author",
+    "minLen": 2,
+    "maxLen": 40,
+    "searchable": true
+  },
+  "enum": {
+    "name": "genre",
+    "values": [
+      "Fiction",
+      "Science",
+      "History",
+      "Technology",
+      "Biography"
+    ],
+    "filterable": true
+  },
+  "amount": {
+    "name": "price",
+    "exclusiveMin": 0,
+    "max": 10000,
+    "genMin": 1,
+    "genDecimals": 2,
+    "rangeFilter": [
+      "minPrice",
+      "maxPrice"
+    ],
+    "sortable": true
+  },
+  "count": {
+    "name": "copies",
+    "integer": true,
+    "min": 0,
+    "max": 500,
+    "sortable": true
+  },
+  "flag": {
+    "name": "available",
+    "filterable": true
+  },
+  "uniqueCode": {
+    "name": "isbn",
+    "minLen": 4,
+    "maxLen": 20,
+    "caseInsensitiveUnique": true
+  },
+  "sample": {
+    "title": "Clean Code",
+    "author": "Robert Martin",
+    "genre": "Technology",
+    "price": 650,
+    "copies": 5,
+    "available": true,
+    "isbn": "978-0132350884"
+  },
+  "sortFields": [
+    "title",
+    "price",
+    "copies"
+  ]
+}
