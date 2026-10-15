@@ -71,7 +71,10 @@ async function openStudent(reg) {
     `<p>${d.laptop ? `Registered laptop: <b>${esc(shortDevice(d.laptop.deviceId))}</b> <span class="muted">since ${esc(fmtTime(d.laptop.boundAt))} from ${esc(d.laptop.ip)}</span> <button class="btn" id="reset-laptop">Reset laptop</button>` : '<span class="muted">No laptop registered yet (bound at the first login with the right PIN).</span>'}</p>` +
     `<p class="muted">Trainer re-runs sit next to the student's own runs. A re-run that differs from the student's best by 10 or more is marked ⚠.</p>` +
     `<div class="wrap"><table>${head}${d.trainerRuns.map((r) => row(r, true)).join('')}${d.runs.map((r) => row(r, false)).join('')}</table></div>` +
-    `<p><button class="btn danger" id="del-student">Delete this student and all their runs</button> <button class="btn" id="close-detail">Close</button></p></div>`;
+    `<p><button class="btn danger" id="del-runs" ${d.runs.length || d.trainerRuns.length ? '' : 'disabled'}>Delete all runs (${d.runs.length})</button> ` +
+    (d.trainerRuns.length ? `<label class="muted"><input type="checkbox" id="del-runs-trainer"> also the ${d.trainerRuns.length} trainer re-run(s)</label> ` : '') +
+    `<button class="btn" id="close-detail">Close</button></p>` +
+    '<p class="muted">Deleting the runs keeps the student on the roster, with their slot and laptop, so they can still sit the assessment. To take a student off the roster, use Students… in the Slots tab.</p></div>';
   $('#detail').querySelectorAll('[data-del]').forEach((b) =>
     b.addEventListener('click', async () => {
       if (!confirm(`Delete run ${b.dataset.del}?`)) return;
@@ -87,12 +90,18 @@ async function openStudent(reg) {
       openStudent(reg);
     });
   }
-  $('#del-student').addEventListener('click', async () => {
-    if (!confirm(`Delete ${reg} and every assessment run they submitted?`)) return;
-    await api(`api/students/${encodeURIComponent(reg)}`, { method: 'DELETE' });
-    $('#detail').innerHTML = '';
-    state.open = null;
-    refresh();
+  $('#del-runs').addEventListener('click', async () => {
+    const withTrainer = Boolean($('#del-runs-trainer') && $('#del-runs-trainer').checked);
+    const what = `${d.runs.length} assessment run(s)${withTrainer ? ` and ${d.trainerRuns.length} trainer re-run(s)` : ''}`;
+    if (!confirm(`Delete all ${what} of ${reg}? This cannot be undone. ${reg} stays on the roster.`)) return;
+    try {
+      const r = await api(`api/students/${encodeURIComponent(reg)}/runs${withTrainer ? '?trainer=1' : ''}`, { method: 'DELETE' });
+      toast(`${reg}: deleted ${r.deletedRuns} run(s)${withTrainer ? ` and ${r.deletedTrainerRuns} trainer re-run(s)` : ''}.`);
+    } catch (e) {
+      toast(`Could not delete the runs of ${reg}: ${e.message}`, true);
+    }
+    await refresh();
+    openStudent(reg);
   });
   $('#close-detail').addEventListener('click', () => {
     $('#detail').innerHTML = '';
@@ -135,7 +144,12 @@ async function renderNotStarted(summary) {
   }
   const rows = await api('api/not-started');
   $('#ns-note').textContent = `${rows.length} of ${summary.rosterSize} students on the roster have no assessment run yet.`;
-  table($('#notstarted'), [{ key: 'registrationNumber', label: 'Registration' }, { key: 'name', label: 'Name' }, { key: 'section', label: 'Section' }, { key: 'slot', label: 'Slot' }], rows);
+  table(
+    $('#notstarted'),
+    [{ key: 'registrationNumber', label: 'Registration' }, { key: 'name', label: 'Name' }, { key: 'section', label: 'Section' }, { key: 'slot', label: 'Slot' }],
+    rows,
+    (r) => (switchTab('students'), openStudent(r.registrationNumber)),
+  );
 }
 
 // ---- slots ----------------------------------------------------------------------------------
@@ -204,6 +218,7 @@ function actionsHtml(r) {
   if (st === 'open') out.push(b('edit', 'Edit window'));
   if ((st === 'open' || st === 'ended') && r.closesAt) out.push(b('extend', `+${EXTEND_MINUTES} min`));
   if (st === 'open' || st === 'scheduled') out.push(b('close', st === 'scheduled' ? 'Cancel schedule' : 'Close now', 'danger'));
+  out.push(b('students', 'Students…'));
   out.push(`<a class="btn" href="api/pin-slips?slot=${encodeURIComponent(r.slot)}" target="_blank" rel="noopener">PIN slips</a>`);
   return out.join(' ');
 }
@@ -288,6 +303,7 @@ async function postSlot(path, body) {
 async function slotAction(r, act) {
   const slot = r.slot;
   const url = `api/slots/${encodeURIComponent(slot)}`;
+  if (act === 'students') return openSlotStudents(slot);
   if (act === 'edit') {
     state.editing = slot;
     renderSlots();
@@ -329,6 +345,142 @@ async function slotAction(r, act) {
   }
 }
 
+// ---- students of one slot (add one, add many, remove) ---------------------------------------------
+// The panel is only redrawn after an action, not by the 10-second refresh, so ticked boxes and typed text stay.
+const REG_RE = /^[A-Za-z0-9._/-]{4,20}$/;
+
+// one student per line: reg,name,section (commas, tabs or semicolons, so rows pasted from Excel and CSV files saved
+// by Excel work); a header line is skipped
+function parseStudentLines(text) {
+  const students = [];
+  const bad = [];
+  for (const raw of text.replace(/^﻿/, '').split(/\r?\n/)) {
+    const line = raw.trim();
+    if (!line) continue;
+    const sep = line.includes('\t') ? '\t' : !line.includes(',') && line.includes(';') ? ';' : ',';
+    const cells = line.split(sep).map((c) => c.trim().replace(/^"|"$/g, ''));
+    if (/^reg/i.test(cells[0])) continue;
+    if (!REG_RE.test(cells[0])) bad.push(line);
+    else students.push({ registrationNumber: cells[0], name: cells[1] || '', section: cells[2] || '' });
+  }
+  return { students, bad };
+}
+
+async function addToSlot(slot, students) {
+  const r = await postSlot(`api/slots/${encodeURIComponent(slot)}/students`, { students });
+  const parts = [`${r.added} added`];
+  if (r.updated) parts.push(`${r.updated} already in ${slot} (name/section updated)`);
+  if (r.moved.length) parts.push(`${r.moved.length} moved here from another slot (${r.moved.map((m) => `${m.registrationNumber} from ${m.from}`).join(', ')})`);
+  toast(`${slot}: ${parts.join(', ')}.`);
+}
+
+// isNew: a slot from New slot…, which does not exist until its first student is added
+async function openSlotStudents(slot, isNew = false) {
+  const el = $('#slot-students');
+  let rows = [];
+  if (!isNew) {
+    try {
+      rows = await api(`api/slots/${encodeURIComponent(slot)}/students`);
+    } catch (e) {
+      el.innerHTML = '';
+      // the collector's catch-all 404 ("not found") means the running server predates this route
+      return toast(/"not found"/.test(e.message) ? 'The collector is running an older version. Restart it (npm run collector), then try again.' : `Could not load the students of ${slot}: ${e.message}`, true);
+    }
+  }
+  el.innerHTML =
+    `<div class="panel"><h3>Students in ${esc(slot)} <span class="muted">(${rows.length})</span></h3>` +
+    '<h4>Add one student</h4>' +
+    '<div class="bar"><input type="text" id="ss-reg" placeholder="Registration number" maxlength="20"> <input type="text" id="ss-name" placeholder="Name" maxlength="100"> ' +
+    '<input type="text" id="ss-section" placeholder="Section" maxlength="100"> <button class="btn" id="ss-add">Add</button></div>' +
+    '<h4>Add many students</h4>' +
+    '<p class="muted">Upload a CSV file, or paste the rows below. One student per line: <code>reg,name,section</code> (a header line is skipped; rows copied from Excel work too). A student who is in another slot is moved to this one.</p>' +
+    '<div class="bar"><label class="btn">Upload CSV…<input type="file" id="ss-csv" accept=".csv,.txt,text/csv,text/plain" hidden></label></div>' +
+    '<textarea id="ss-bulk" placeholder="22CS001,Asha K,A&#10;22CS002,Ravi S,A"></textarea>' +
+    '<div class="bar"><button class="btn" id="ss-bulk-add">Add all</button></div>' +
+    '<h4>Remove students</h4>' +
+    (rows.length
+      ? '<div class="wrap"><table><thead><tr><th><input type="checkbox" id="ss-all" title="Select all"></th><th>Registration</th><th>Name</th><th>Section</th><th>Laptop</th><th>Runs</th><th>Best</th></tr></thead><tbody>' +
+        rows
+          .map((r) => `<tr><td><input type="checkbox" class="ss-pick" value="${esc(r.registrationNumber)}"></td><td>${esc(r.registrationNumber)}</td><td>${esc(r.name)}</td><td>${esc(r.section)}</td>` +
+            `<td>${r.laptop ? 'registered' : '<span class="muted">—</span>'}</td><td class="num">${r.attempts}</td><td class="num ${r.best === null ? '' : scoreCls(r.best)}">${r.best === null ? '' : r.best}</td></tr>`)
+          .join('') +
+        '</tbody></table></div>' +
+        '<div class="bar" style="margin-top:8px"><button class="btn danger" id="ss-remove" disabled>Remove selected</button> ' +
+        '<label class="muted"><input type="checkbox" id="ss-del-runs"> also delete their runs</label></div>' +
+        '<p class="muted">A removed student can no longer log in or submit, and their laptop registration is cleared. Their runs stay on the dashboard unless you tick the box.</p>'
+      : '<p class="muted">No students in this slot yet.</p>') +
+    '<p><button class="btn" id="ss-close">Close</button></p></div>';
+
+  const reload = async () => {
+    await loadSlots().catch(() => {});
+    renderSlots();
+    openSlotStudents(slot);
+  };
+  const busy = (on) => el.querySelectorAll('button').forEach((b) => (b.disabled = on));
+
+  $('#ss-add').addEventListener('click', async () => {
+    const reg = $('#ss-reg').value.trim();
+    if (!REG_RE.test(reg)) return toast('Enter a registration number: 4 to 20 letters, digits, . _ / -', true);
+    busy(true);
+    try {
+      await addToSlot(slot, [{ registrationNumber: reg, name: $('#ss-name').value, section: $('#ss-section').value }]);
+      await reload();
+    } catch (e) {
+      toast(`Could not add ${reg}: ${e.message}`, true);
+      busy(false);
+    }
+  });
+
+  const addLines = async (text, source) => {
+    const { students, bad } = parseStudentLines(text);
+    if (bad.length) return toast(`Fix these lines in ${source} first (the registration number must be 4 to 20 letters, digits, . _ / -): ${bad.slice(0, 3).join(' | ')}${bad.length > 3 ? ` and ${bad.length - 3} more` : ''}`, true);
+    if (!students.length) return toast(`No students found in ${source}. Expected one per line: reg,name,section`, true);
+    if (students.length > 1000) return toast(`${source} has ${students.length} students; add at most 1000 at a time.`, true);
+    busy(true);
+    try {
+      await addToSlot(slot, students);
+      await reload();
+    } catch (e) {
+      toast(`Could not add the students: ${e.message}`, true);
+      busy(false);
+    }
+  };
+  $('#ss-bulk-add').addEventListener('click', () => addLines($('#ss-bulk').value, 'the pasted text'));
+  $('#ss-csv').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    e.target.value = '';
+    if (file) await addLines(await file.text(), file.name);
+  });
+
+  const picks = () => [...el.querySelectorAll('.ss-pick:checked')].map((c) => c.value);
+  const syncRemove = () => $('#ss-remove') && ($('#ss-remove').disabled = !picks().length);
+  el.querySelectorAll('.ss-pick').forEach((c) => c.addEventListener('change', syncRemove));
+  if ($('#ss-all')) {
+    $('#ss-all').addEventListener('change', (e) => {
+      el.querySelectorAll('.ss-pick').forEach((c) => (c.checked = e.target.checked));
+      syncRemove();
+    });
+    $('#ss-remove').addEventListener('click', async () => {
+      const regs = picks();
+      const deleteRuns = $('#ss-del-runs').checked;
+      const list = regs.length > 5 ? `${regs.slice(0, 5).join(', ')} and ${regs.length - 5} more` : regs.join(', ');
+      if (!confirm(`Remove ${regs.length} student(s) from ${slot}: ${list}?${deleteRuns ? '\n\nTheir runs and trainer re-runs will be DELETED too. This cannot be undone.' : '\n\nTheir runs are kept.'}`)) return;
+      busy(true);
+      try {
+        const r = await postSlot(`api/slots/${encodeURIComponent(slot)}/students/remove`, { registrationNumbers: regs, deleteRuns });
+        toast(`${slot}: removed ${r.removed} student(s)${deleteRuns ? `, deleted ${r.deletedRuns} run(s)` : ''}.`);
+        await refresh();
+        await reload();
+      } catch (e) {
+        toast(`Could not remove: ${e.message}`, true);
+        busy(false);
+      }
+    });
+  }
+  $('#ss-close').addEventListener('click', () => (el.innerHTML = ''));
+  el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
 async function renderConflicts() {
   const rows = await api('api/laptop-conflicts');
   $('#lc-note').textContent = rows.length
@@ -343,9 +495,20 @@ async function renderConflicts() {
       { key: 'otherRegistrationNumber', label: 'Laptop belongs to' },
       { key: 'deviceId', label: 'Laptop', html: (r) => esc(shortDevice(r.deviceId)) },
       { key: 'clientIp', label: 'IP' },
+      { key: 'reset', label: '', html: (r) => `<button class="btn" data-free="${esc(r.deviceId)}">Free this laptop</button>` },
     ],
     rows,
-    (r) => (switchTab('students'), openStudent(r.registrationNumber)),
+    // a "laptop already used" row opens the student the laptop belongs to (the one with the Reset laptop button)
+    (r) => (switchTab('students'), openStudent(r.otherRegistrationNumber || r.registrationNumber)),
+  );
+  $('#conflicts').querySelectorAll('[data-free]').forEach((b) =>
+    b.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      if (!confirm('Free this laptop from the student it is registered to? The next student who logs in on it (with the right PIN) gets it.')) return;
+      const r = await api(`api/laptops/${encodeURIComponent(b.dataset.free)}/reset`, { method: 'POST' });
+      toast(r.registrationNumber ? `Laptop freed from ${r.registrationNumber}.` : 'This laptop is not registered to anyone now.');
+      refresh();
+    }),
   );
 }
 
@@ -382,6 +545,13 @@ $('#students thead').addEventListener('click', (e) => {
     state.sortDir = 1;
   }
   renderStudents();
+});
+$('#new-slot').addEventListener('click', () => {
+  const slot = (prompt('Name of the new slot (assessment session), e.g. sist-15-10-26-fn. It is created, closed, when you add its first student:') || '').trim();
+  if (!slot) return;
+  if (!/^[A-Za-z0-9._-]{1,60}$/.test(slot)) return toast('A slot name uses only letters, digits, . _ - (up to 60 characters).', true);
+  if (state.slots.some((r) => r.slot === slot)) return openSlotStudents(slot);
+  openSlotStudents(slot, true);
 });
 $('#roster').addEventListener('change', async (e) => {
   const file = e.target.files[0];

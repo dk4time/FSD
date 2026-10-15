@@ -45,8 +45,13 @@ HTTP answer, measured by polling every 0.1 s. Spring Boot times are for `java -j
 | A7 | Spring Boot | 100 | 100 | 100 | 0 | not run (see A1) | 0.86 s | OK |
 | A8 | Express | 100 | 100 | 100 | 0 | OK: no score shown, collector stored 100 | 0.14 s | OK |
 | A8 | Spring Boot | 100 | 100 | 100 | 0 | not run (see A1) | 0.86 s | OK |
+| A9 | Express | 100 | 100 | 100 | 0 | not run | — | OK |
+| A9 | Spring Boot | 100 | 100 | 100 | 0 | not run | — | OK |
+| A10 | Express | 100 | 100 | 100 | 0 | not run | — | OK |
+| A10 | Spring Boot | 100 | 100 | 100 | 0 | not run | — | OK |
 
-60 trainer runs: all 100/100, 0 failed, 0 BLOCKED, 0 ABORTED.
+72 trainer runs: all 100/100, 0 failed, 0 BLOCKED, 0 ABORTED. (A9 and A10 were added on 2026-10-15, derived from A7 and A8,
+and run on port 8091; their kit end-to-end runs have not been done yet.)
 
 **Assessment kit end-to-end (A1–A8):**
 - I copied `dist/assessment-kit` to a temp folder, unchanged except for `config.json`, which I pointed at a local collector.

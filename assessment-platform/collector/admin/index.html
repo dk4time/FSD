@@ -47,6 +47,11 @@
   #toast.show { opacity:1; transform:none; } #toast.error { background:var(--bad); color:#fff; }
   .btn:disabled { opacity:.5; cursor:default; }
   input[type=datetime-local] { padding:5px 8px; border:1px solid var(--line); border-radius:6px; background:var(--card); color:var(--ink); }
+  #slot-students { margin-top:16px; }
+  .panel input[type=text], .panel textarea { padding:6px 9px; border:1px solid var(--line); border-radius:6px; background:var(--card); color:var(--ink); font:inherit; }
+  .panel textarea { width:100%; max-width:560px; min-height:90px; font-family:ui-monospace, Menlo, monospace; font-size:13px; }
+  .panel h4 { margin:12px 0 6px; font-size:13px; }
+  .panel tbody tr:hover { cursor:default; }
 </style>
 </head>
 <body>
@@ -76,8 +81,10 @@
     <div id="detail"></div>
   </section>
   <section id="tab-slots" class="hidden">
-    <p class="muted">Only students in an <b>open</b> slot can log in or submit. Use <b>Schedule…</b> to set the session window the day before: the slot opens and closes by itself. <b>Open now</b> and <b>Close now</b> act at once, and <b>+10 min</b> gives extra time. A new slot (from Upload roster CSV) starts closed.</p>
+    <p class="muted">Only students in an <b>open</b> slot can log in or submit. Use <b>Schedule…</b> to set the session window the day before: the slot opens and closes by itself. <b>Open now</b> and <b>Close now</b> act at once, and <b>+10 min</b> gives extra time. <b>Students…</b> adds or removes students in a slot. A new slot (from Upload roster CSV or New slot…) starts closed.</p>
+    <div class="bar"><button class="btn" id="new-slot">New slot…</button></div>
     <div class="wrap"><table id="slots"><thead></thead><tbody></tbody></table></div>
+    <div id="slot-students"></div>
   </section>
   <section id="tab-trainer" class="hidden">
     <div class="wrap"><table id="trainer"><thead></thead><tbody></tbody></table></div>

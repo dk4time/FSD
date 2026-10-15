@@ -1,0 +1,67 @@
+{
+  "setId": "A10",
+  "mode": "assessment",
+  "title": "Travel Packages",
+  "resource": "packages",
+  "text1": {
+    "name": "name",
+    "minLen": 3,
+    "maxLen": 60,
+    "searchable": true,
+    "sortable": true
+  },
+  "text2": {
+    "name": "destination",
+    "minLen": 2,
+    "maxLen": 40,
+    "searchable": true
+  },
+  "enum": {
+    "name": "category",
+    "values": [
+      "Beach",
+      "Hill",
+      "Heritage",
+      "Adventure",
+      "Pilgrimage"
+    ],
+    "filterable": true
+  },
+  "amount": {
+    "name": "pricePerPerson",
+    "exclusiveMin": 0,
+    "max": 200000,
+    "genMin": 1,
+    "genDecimals": 2,
+    "rangeFilter": [
+      "minPricePerPerson",
+      "maxPricePerPerson"
+    ],
+    "sortable": true
+  },
+  "count": {
+    "name": "durationDays",
+    "integer": true,
+    "min": 1,
+    "max": 60,
+    "sortable": true
+  },
+  "flag": {
+    "name": "includesFlight",
+    "filterable": true
+  },
+  "uniqueCode": null,
+  "sample": {
+    "name": "Goa Beach Getaway",
+    "destination": "Goa",
+    "category": "Beach",
+    "pricePerPerson": 18500,
+    "durationDays": 4,
+    "includesFlight": false
+  },
+  "sortFields": [
+    "name",
+    "pricePerPerson",
+    "durationDays"
+  ]
+}

@@ -12,7 +12,7 @@ const { PIN_REGEX, pinFor, pinMatches, createPinLimiter } = require('./pins');
 
 const TEST_ID = /^[CRLUPDGFSOXH][0-9]{2}$/;
 const UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-const SET_ID = /^(P[12]|A[1-8])$/;
+const SET_ID = /^(P[12]|A([1-9]|10))$/;
 const DEVICE_ID = /^[0-9a-f]{32}$/;
 const SLOT_NAME = /^[A-Za-z0-9._-]{1,60}$/;
 const STATUSES = new Set(['PASS', 'FAIL', 'BLOCKED']);
@@ -483,6 +483,20 @@ function createApp({ db, collectorKey, adminPassword, pinSecret, rateLimitMs = 2
     }
   });
 
+  // Frees a laptop from whichever student it is bound to (from a Laptop conflicts row; that student may have no runs yet)
+  app.post('/admin/api/laptops/:deviceId/reset', async (req, res, next) => {
+    try {
+      const deviceId = String(req.params.deviceId);
+      if (!DEVICE_ID.test(deviceId)) return err(res, 400, 'invalid laptop id');
+      const owner = await roster.findOne({ deviceId }, { projection: { _id: 1 } });
+      if (!owner) return res.json({ ok: true, registrationNumber: null });
+      await roster.updateOne({ _id: owner._id, deviceId }, { $unset: { deviceId: '', deviceBoundAt: '', deviceIp: '' } });
+      res.json({ ok: true, registrationNumber: owner._id });
+    } catch (e) {
+      next(e);
+    }
+  });
+
   app.get('/admin/api/pins.csv', async (req, res, next) => {
     try {
       const all = await roster.find(req.query.slot ? { slot: String(req.query.slot) } : {}).sort({ _id: 1 }).toArray();
@@ -527,6 +541,87 @@ body{font-family:system-ui,sans-serif;margin:16px}.grid{display:grid;grid-templa
       const t = await trainerRuns.deleteOne({ runId: req.params.runId });
       if (t.deletedCount) return res.json({ ok: true, deleted: 'trainerRun' });
       err(res, 404, 'no such run');
+    } catch (e) {
+      next(e);
+    }
+  });
+
+  // ---- students of one slot: list, add (one or many), remove ----
+  app.get('/admin/api/slots/:slot/students', async (req, res, next) => {
+    try {
+      const [doc, list] = await Promise.all([slots.findOne({ _id: req.params.slot }), roster.find({ slot: req.params.slot }).sort({ _id: 1 }).toArray()]);
+      if (!doc && !list.length) return err(res, 404, 'no such slot');
+      const summaries = new Map((await students.find({ _id: { $in: list.map((r) => r._id) } }).toArray()).map((s) => [s._id, s]));
+      res.json(
+        list.map((r) => {
+          const a = (summaries.get(r._id) || {}).assessment;
+          return { registrationNumber: r._id, name: r.name || '', section: r.section || '', laptop: Boolean(r.deviceId), attempts: a ? a.attempts : 0, best: a ? a.best : null };
+        }),
+      );
+    } catch (e) {
+      next(e);
+    }
+  });
+
+  // body: { students: [{ registrationNumber, name?, section? }] } (up to 1000). A student already in another slot is
+  // moved to this one, as a roster upload does; the laptop binding is kept. A new slot starts closed.
+  app.post('/admin/api/slots/:slot/students', jsonBody, async (req, res, next) => {
+    try {
+      const slot = req.params.slot;
+      if (!SLOT_NAME.test(slot)) return err(res, 400, 'a slot name is required (letters, digits, . _ -), for example sist-15-10-26-fn');
+      const list = req.body && req.body.students;
+      if (!Array.isArray(list) || !list.length || list.length > 1000) return err(res, 400, 'students must be a list of 1 to 1000 entries');
+      const rows = new Map();
+      for (const s of list) {
+        const text = (v) => (typeof v === 'string' ? v.trim().slice(0, 100) : '');
+        const reg = s && typeof s.registrationNumber === 'string' ? s.registrationNumber.trim() : '';
+        if (!REG_REGEX.test(reg)) return err(res, 400, `invalid registration number "${String(reg).slice(0, 30)}" (4 to 20 letters, digits, . _ / -)`);
+        rows.set(normalizeReg(reg), { _id: normalizeReg(reg), name: text(s.name), section: text(s.section) });
+      }
+      const before = await roster.find({ _id: { $in: [...rows.keys()] } }, { projection: { slot: 1 } }).toArray();
+      const moved = before.filter((r) => r.slot && r.slot !== slot).map((r) => ({ registrationNumber: r._id, from: r.slot }));
+      await roster.bulkWrite([...rows.values()].map((r) => ({ updateOne: { filter: { _id: r._id }, update: { $set: { name: r.name, section: r.section, slot } }, upsert: true } })));
+      await slots.updateOne({ _id: slot }, { $setOnInsert: { open: false, opensAt: null, closesAt: null, createdAt: new Date() } }, { upsert: true });
+      res.json({ ok: true, slot, added: rows.size - before.length, updated: before.length - moved.length, moved });
+    } catch (e) {
+      next(e);
+    }
+  });
+
+  // body: { registrationNumbers: [...], deleteRuns?: boolean }. Takes the students off the roster (they can no longer
+  // log in or submit, and their laptop binding goes). Their runs stay unless deleteRuns is true.
+  app.post('/admin/api/slots/:slot/students/remove', jsonBody, async (req, res, next) => {
+    try {
+      const { registrationNumbers, deleteRuns = false } = req.body || {};
+      if (!Array.isArray(registrationNumbers) || !registrationNumbers.length || registrationNumbers.some((r) => typeof r !== 'string')) {
+        return err(res, 400, 'registrationNumbers must be a non-empty list');
+      }
+      if (typeof deleteRuns !== 'boolean') return err(res, 400, 'deleteRuns must be true or false');
+      const regs = (await roster.find({ _id: { $in: registrationNumbers.map(normalizeReg) }, slot: req.params.slot }, { projection: { _id: 1 } }).toArray()).map((r) => r._id);
+      await roster.deleteMany({ _id: { $in: regs }, slot: req.params.slot });
+      let deletedRuns = 0;
+      if (deleteRuns && regs.length) {
+        deletedRuns = (await runs.deleteMany({ registrationNumber: { $in: regs } })).deletedCount;
+        await trainerRuns.deleteMany({ registrationNumber: { $in: regs } });
+        await students.deleteMany({ _id: { $in: regs } });
+        regs.forEach((r) => lastAccepted.delete(r));
+      }
+      res.json({ ok: true, removed: regs.length, deletedRuns });
+    } catch (e) {
+      next(e);
+    }
+  });
+
+  // Deletes every assessment run of a student (and, with ?trainer=1, the trainer re-runs) and clears their summary.
+  // The student stays on the roster with their laptop binding, so they can still sit the assessment.
+  app.delete('/admin/api/students/:reg/runs', async (req, res, next) => {
+    try {
+      const reg = normalizeReg(req.params.reg);
+      const r = await runs.deleteMany({ registrationNumber: reg });
+      const t = req.query.trainer === '1' ? (await trainerRuns.deleteMany({ registrationNumber: reg })).deletedCount : 0;
+      await students.deleteOne({ _id: reg });
+      lastAccepted.delete(reg);
+      res.json({ ok: true, deletedRuns: r.deletedCount, deletedTrainerRuns: t });
     } catch (e) {
       next(e);
     }

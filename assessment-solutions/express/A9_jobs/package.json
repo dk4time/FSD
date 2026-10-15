@@ -1,0 +1,13 @@
+{
+  "name": "a9-jobs",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Job Postings API (A9) - Express solution",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}

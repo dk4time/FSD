@@ -4,7 +4,7 @@
 // question paper (npm run whoami), because papers are handed out manually on assessment day.
 
 const REG_REGEX = /^[A-Za-z0-9._/-]{4,20}$/;
-const SET_REGEX = /^A[1-8]$/;
+const SET_REGEX = /^A([1-9]|10)$/;
 
 function normalizeReg(reg) {
   return String(reg).trim().toUpperCase();

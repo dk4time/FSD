@@ -1,0 +1,73 @@
+{
+  "setId": "A9",
+  "mode": "assessment",
+  "title": "Job Postings",
+  "resource": "jobs",
+  "text1": {
+    "name": "title",
+    "minLen": 3,
+    "maxLen": 60,
+    "searchable": true,
+    "sortable": true
+  },
+  "text2": {
+    "name": "company",
+    "minLen": 2,
+    "maxLen": 40,
+    "searchable": true
+  },
+  "enum": {
+    "name": "jobType",
+    "values": [
+      "FullTime",
+      "PartTime",
+      "Internship",
+      "Contract",
+      "Freelance"
+    ],
+    "filterable": true
+  },
+  "amount": {
+    "name": "monthlySalary",
+    "exclusiveMin": 0,
+    "max": 500000,
+    "genMin": 1,
+    "genDecimals": 2,
+    "rangeFilter": [
+      "minMonthlySalary",
+      "maxMonthlySalary"
+    ],
+    "sortable": true
+  },
+  "count": {
+    "name": "openings",
+    "integer": true,
+    "min": 1,
+    "max": 500,
+    "sortable": true
+  },
+  "flag": {
+    "name": "isRemote",
+    "filterable": true
+  },
+  "uniqueCode": {
+    "name": "jobCode",
+    "minLen": 4,
+    "maxLen": 20,
+    "caseInsensitiveUnique": true
+  },
+  "sample": {
+    "title": "Junior Backend Developer",
+    "company": "Infotech Solutions",
+    "jobType": "FullTime",
+    "monthlySalary": 45000,
+    "openings": 12,
+    "isRemote": false,
+    "jobCode": "JOB26BE01"
+  },
+  "sortFields": [
+    "title",
+    "monthlySalary",
+    "openings"
+  ]
+}

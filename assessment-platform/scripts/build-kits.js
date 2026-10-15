@@ -144,14 +144,14 @@ function main() {
   const ids = JSON.parse(fs.readFileSync(path.join(KIT_SRC, 'sets.json'), 'utf8'));
   const sets = [];
   for (const id of ids) {
-    if (!/^A[1-8]$/.test(id)) fail(`kits/assessment/sets.json may only list A1-A8, found "${id}"`);
+    if (!/^A([1-9]|10)$/.test(id)) fail(`kits/assessment/sets.json may only list A1-A10, found "${id}"`);
     const file = path.join(ROOT, 'domains', `${id}.json`);
     if (!fs.existsSync(file)) fail(`domains/${id}.json is missing`);
     const cfg = JSON.parse(fs.readFileSync(file, 'utf8'));
     if (cfg.mode !== 'assessment' || cfg.setId !== id) fail(`domains/${id}.json is not an assessment set`);
     sets.push(cfg);
   }
-  const missing = ['A1', 'A2', 'A3', 'A4', 'A5', 'A6', 'A7', 'A8'].filter((id) => !ids.includes(id));
+  const missing = ['A1', 'A2', 'A3', 'A4', 'A5', 'A6', 'A7', 'A8', 'A9', 'A10'].filter((id) => !ids.includes(id));
   if (missing.length) console.warn(`WARNING: the kit does not contain ${missing.join(', ')}. Students with those sets cannot run it.`);
 
   const staging = fs.mkdtempSync(path.join(os.tmpdir(), 'kit-'));

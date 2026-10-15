@@ -114,7 +114,7 @@ test('rejects bad key, bad checksum, unknown set, practice and trainer modes on 
     tampered.tests[50].status = 'PASS';
     assert.equal((await post(app.base, '/api/results', tampered)).status, 400);
 
-    const unknownSet = makeDoc({ setId: 'A9' });
+    const unknownSet = makeDoc({ setId: 'A11' });
     const r = await post(app.base, '/api/results', unknownSet);
     assert.equal(r.status, 400);
     assert.match(r.body.error, /unknown set/);
@@ -139,7 +139,7 @@ test('rejects bad key, bad checksum, unknown set, practice and trainer modes on 
 test('rejection messages never use result vocabulary', async () => {
   const app = await startApp();
   try {
-    const cases = [makeDoc({ mode: 'practice' }), { ...makeDoc(), checksum: 'ab'.repeat(32) }, makeDoc({ setId: 'A9' })];
+    const cases = [makeDoc({ mode: 'practice' }), { ...makeDoc(), checksum: 'ab'.repeat(32) }, makeDoc({ setId: 'A11' })];
     for (const doc of cases) {
       const r = await post(app.base, '/api/results', doc);
       assert.equal(r.status, 400);
@@ -423,6 +423,14 @@ test('a laptop bound to one student is rejected for another registration number 
     const [entry] = await (await fetch(app.base + '/admin/api/laptop-conflicts', { headers: adminHeaders })).json();
     assert.equal(entry.registrationNumber, '22CS014');
     assert.equal(entry.otherRegistrationNumber, '22CS001');
+
+    // the owner has no runs yet; freeing the laptop from the conflict row lets the other student register it
+    const free = await fetch(app.base + `/admin/api/laptops/${laptopOf('22CS001')}/reset`, { method: 'POST', headers: adminHeaders });
+    assert.equal(free.status, 200);
+    assert.equal((await free.json()).registrationNumber, '22CS001');
+    assert.equal((await verify(app, '22CS014', laptopOf('22CS001'))).status, 200);
+    const bad = await fetch(app.base + '/admin/api/laptops/nope/reset', { method: 'POST', headers: adminHeaders });
+    assert.equal(bad.status, 400);
   } finally {
     await app.close();
   }
@@ -614,6 +622,102 @@ test('+10 min moves the closing time later, and reopens a slot whose time has pa
 
     await db.collection('slots').updateOne({ _id: 'test-slot' }, { $set: { open: false } });
     assert.equal((await extend({ minutes: 10 })).status, 400, 'a closed slot is not extended');
+  } finally {
+    await app.close();
+  }
+});
+
+// ---- students of a slot (add one / many, remove) and delete all runs of a student -------------------
+const adminJson = (app, method, path, body) =>
+  fetch(app.base + path, { method, headers: { ...adminHeaders, 'content-type': 'application/json' }, body: body === undefined ? undefined : JSON.stringify(body) });
+
+test('adding students to a slot: one or many, a new slot starts closed, a student in another slot is moved', async () => {
+  const app = await startApp();
+  try {
+    let res = await adminJson(app, 'POST', '/admin/api/slots/sist-16-10-26-an/students', { students: [{ registrationNumber: '23ec090', name: 'Meena R', section: 'C' }] });
+    assert.equal(res.status, 200);
+    assert.deepEqual(await res.json(), { ok: true, slot: 'sist-16-10-26-an', added: 1, updated: 0, moved: [] });
+    assert.equal((await db.collection('slots').findOne({ _id: 'sist-16-10-26-an' })).open, false);
+    assert.deepEqual(await db.collection('roster').findOne({ _id: '23EC090' }), { _id: '23EC090', name: 'Meena R', section: 'C', slot: 'sist-16-10-26-an' });
+
+    // bulk: 22CS001 is in test-slot (moved, laptop kept), 23EC090 is already here (updated), 21IT145 is new
+    await db.collection('roster').updateOne({ _id: '22CS001' }, { $set: { deviceId: laptopOf('22CS001') } });
+    res = await adminJson(app, 'POST', '/admin/api/slots/sist-16-10-26-an/students', {
+      students: [{ registrationNumber: '22CS001', name: 'Asha K', section: 'A' }, { registrationNumber: '23EC090', name: 'Meena Raj', section: 'C' }, { registrationNumber: '21IT145' }],
+    });
+    const body = await res.json();
+    assert.equal(body.added, 1);
+    assert.equal(body.updated, 1);
+    assert.deepEqual(body.moved, [{ registrationNumber: '22CS001', from: 'test-slot' }]);
+    const asha = await db.collection('roster').findOne({ _id: '22CS001' });
+    assert.equal(asha.slot, 'sist-16-10-26-an');
+    assert.equal(asha.deviceId, laptopOf('22CS001'), 'moving keeps the laptop binding');
+    assert.equal((await db.collection('roster').findOne({ _id: '23EC090' })).name, 'Meena Raj');
+
+    const list = await (await fetch(app.base + '/admin/api/slots/sist-16-10-26-an/students', { headers: adminHeaders })).json();
+    assert.deepEqual(list.map((s) => [s.registrationNumber, s.laptop]), [['21IT145', false], ['22CS001', true], ['23EC090', false]]);
+
+    for (const bad of [{}, { students: [] }, { students: [{ registrationNumber: 'ab' }] }, { students: [{ name: 'x' }] }]) {
+      assert.equal((await adminJson(app, 'POST', '/admin/api/slots/sist-16-10-26-an/students', bad)).status, 400, JSON.stringify(bad));
+    }
+    assert.equal((await adminJson(app, 'POST', '/admin/api/slots/bad%20slot/students', { students: [{ registrationNumber: '22CS009' }] })).status, 400);
+    assert.equal((await fetch(app.base + '/admin/api/slots/nope/students', { headers: adminHeaders })).status, 404);
+    assert.equal((await fetch(app.base + '/admin/api/slots/sist-16-10-26-an/students', { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' })).status, 401);
+  } finally {
+    await app.close();
+  }
+});
+
+test('removing students from a slot takes them off the roster; runs stay unless deleteRuns', async () => {
+  const app = await startApp({ rateLimitMs: 0 });
+  try {
+    await enroll('21IT145', '23EC090');
+    for (const reg of ['22CS001', '21IT145', '23EC090']) assert.equal((await post(app.base, '/api/results', makeDoc({ reg }))).status, 200);
+    await db.collection('roster').insertOne({ _id: '24ME001', slot: 'other' });
+
+    // only students of this slot are removed (24ME001 is in another slot)
+    let res = await adminJson(app, 'POST', '/admin/api/slots/test-slot/students/remove', { registrationNumbers: ['22cs001', '24ME001'] });
+    assert.deepEqual(await res.json(), { ok: true, removed: 1, deletedRuns: 0 });
+    assert.equal(await db.collection('roster').findOne({ _id: '22CS001' }), null);
+    assert.ok(await db.collection('roster').findOne({ _id: '24ME001' }));
+    assert.equal(await db.collection('runs').countDocuments({ registrationNumber: '22CS001' }), 1, 'runs are kept');
+    assert.equal((await post(app.base, '/api/results', makeDoc({ reg: '22CS001' }))).status, 403, 'a removed student can no longer submit');
+
+    res = await adminJson(app, 'POST', '/admin/api/slots/test-slot/students/remove', { registrationNumbers: ['21IT145', '23EC090'], deleteRuns: true });
+    assert.deepEqual(await res.json(), { ok: true, removed: 2, deletedRuns: 2 });
+    assert.equal(await db.collection('runs').countDocuments({ registrationNumber: { $in: ['21IT145', '23EC090'] } }), 0);
+    assert.equal(await db.collection('students').countDocuments({ _id: { $in: ['21IT145', '23EC090'] } }), 0);
+
+    for (const bad of [{}, { registrationNumbers: [] }, { registrationNumbers: [1] }, { registrationNumbers: ['X1234'], deleteRuns: 'yes' }]) {
+      assert.equal((await adminJson(app, 'POST', '/admin/api/slots/test-slot/students/remove', bad)).status, 400, JSON.stringify(bad));
+    }
+  } finally {
+    await app.close();
+  }
+});
+
+test('delete all runs of a student keeps them on the roster; trainer re-runs only with ?trainer=1', async () => {
+  const app = await startApp({ rateLimitMs: 0 });
+  try {
+    await enroll('21IT145');
+    await post(app.base, '/api/results', makeDoc({ passCount: 90 }));
+    await post(app.base, '/api/results', makeDoc({ passCount: 40 }));
+    await post(app.base, '/api/results', makeDoc({ reg: '21IT145' }));
+    const rerun = makeDoc({ mode: 'trainer', note: 'spot check' });
+    assert.equal((await post(app.base, '/admin/api/trainer-runs', rerun, adminHeaders)).status, 200);
+
+    let res = await fetch(`${app.base}/admin/api/students/22CS001/runs`, { method: 'DELETE', headers: adminHeaders });
+    assert.deepEqual(await res.json(), { ok: true, deletedRuns: 2, deletedTrainerRuns: 0 });
+    assert.equal(await db.collection('runs').countDocuments({ registrationNumber: '22CS001' }), 0);
+    assert.equal(await db.collection('students').findOne({ _id: '22CS001' }), null);
+    assert.equal(await db.collection('trainerRuns').countDocuments({ registrationNumber: '22CS001' }), 1);
+    assert.equal(await db.collection('runs').countDocuments({ registrationNumber: '21IT145' }), 1, 'other students are untouched');
+    assert.ok(await db.collection('roster').findOne({ _id: '22CS001', slot: 'test-slot' }), 'still on the roster');
+    assert.equal((await post(app.base, '/api/results', makeDoc())).status, 200, 'and can submit again');
+
+    res = await fetch(`${app.base}/admin/api/students/22CS001/runs?trainer=1`, { method: 'DELETE', headers: adminHeaders });
+    assert.deepEqual(await res.json(), { ok: true, deletedRuns: 1, deletedTrainerRuns: 1 });
+    assert.equal((await fetch(`${app.base}/admin/api/students/22CS001/runs`, { method: 'DELETE' })).status, 401);
   } finally {
     await app.close();
   }

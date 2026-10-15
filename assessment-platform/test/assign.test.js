@@ -24,7 +24,7 @@ test('registration number format', () => {
   for (const bad of ['abc', 'has space1', 'x'.repeat(21), 'reg#1234', '']) assert.ok(!core.isValidReg(bad), bad);
 });
 
-test('set format: only assessment sets A1-A8', () => {
-  for (const ok of ['A1', 'A8', 'a5', ' A3 ']) assert.ok(core.isValidSet(ok), ok);
-  for (const bad of ['A0', 'A9', 'P1', 'P2', 'A', 'A10', 'B1', '']) assert.ok(!core.isValidSet(bad), bad);
+test('set format: only assessment sets A1-A10', () => {
+  for (const ok of ['A1', 'A8', 'A9', 'a10', 'a5', ' A3 ']) assert.ok(core.isValidSet(ok), ok);
+  for (const bad of ['A0', 'A11', 'A01', 'P1', 'P2', 'A', 'A100', 'B1', '']) assert.ok(!core.isValidSet(bad), bad);
 });

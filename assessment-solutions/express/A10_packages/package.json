@@ -1,0 +1,13 @@
+{
+  "name": "a10-packages",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Travel Packages API (A10) - Express solution",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}
