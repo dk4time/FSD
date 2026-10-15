@@ -7,14 +7,14 @@
     "node": ">=18"
   },
   "scripts": {
-    "postinstall": "npm --prefix collector install",
-    "test": "node --test test/*.test.js && npm --prefix collector test",
+    "postinstall": "cd collector && npm install",
+    "test": "node --test test/*.test.js && cd collector && npm test",
     "verify": "node trainer-only/verify.js",
     "build-kits": "node scripts/build-kits.js",
     "check-atlas": "node collector/check-atlas.js",
     "trainer": "node trainer-only/trainer-cli.js",
     "reference": "node trainer-only/reference/server.js",
-    "collector": "npm --prefix collector start"
+    "collector": "cd collector && npm start"
   },
   "dependencies": {
     "express": "^4.21.2"
